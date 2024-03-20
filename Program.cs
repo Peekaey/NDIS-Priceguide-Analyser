@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using PricelistGenerator.Exceptions;
-using PricelistGenerator.Handlers;
+﻿using PricelistGenerator.Handlers;
+using PricelistGenerator.Helpers;
 using PricelistGenerator.Models;
 using PricelistGenerator.Models.File;
 using Spectre.Console;
@@ -32,9 +30,11 @@ namespace PricelistGenerator
                         "[underline olive]Starting with C:\\ and ending with filename.xlsx :[/]");
                 try
                 {
-                    if (Helpers.ExcelHelper.ValidateProvidedFile(providedFilePath))
+                    ExcelHelper excelHelper = new ExcelHelper();
+                    if (excelHelper.ValidateProvidedFile(providedFilePath))
                     {
-                        catalogFile = Helpers.ExcelHelper.CreateFileFromProvidedFilePath(providedFilePath);
+                        
+                        catalogFile = excelHelper.CreateFileFromProvidedFilePath(providedFilePath);
                         AnsiConsole.MarkupLine("File existence validation [bold green1]PASSED[/]"); // Emoji code for green tick
                         break;
                     }
@@ -54,11 +54,13 @@ namespace PricelistGenerator
             AnsiConsole.MarkupLine(
                 "[dim slowblink]Now importing NDIS Support Catalogue...[/]"); // Emoji code for green tick
 
-            ndisSupportCatalogue = NDISSupportCatalogueHandler.importNDISupportCatalogue(catalogFile);
+            NDISSupportCatalogueHandler ndisSupportCatalogueHandler = new NDISSupportCatalogueHandler();
+            ndisSupportCatalogue = ndisSupportCatalogueHandler.importNDISupportCatalogue(catalogFile);
             AnsiConsole.MarkupLine(
                 "NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]"); // Emoji code for green tick
             
-            MenuHandler.DisplayMainMenu(ndisSupportCatalogue, catalogFile);
+            MenuHandler menuHandler = new MenuHandler();
+            menuHandler.DisplayMainMenu(ndisSupportCatalogue, catalogFile);
             
         }
     }

@@ -7,9 +7,10 @@ namespace PricelistGenerator.Handlers;
 
 public class NDISSupportCatalogueHandler
 {
-    public static NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile)
+    public NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile)
     {
         NDISSupportCatalogue ndisSupportCatalogue = new NDISSupportCatalogue();
+        NDISSupportCatalogueService NDISSupportCatalogueService = new NDISSupportCatalogueService();
         
         ndisSupportCatalogue = NDISSupportCatalogueService.importNDISupportCatalogue(spreadsheetFile, ndisSupportCatalogue);
 

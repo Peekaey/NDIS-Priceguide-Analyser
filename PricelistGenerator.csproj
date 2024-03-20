@@ -13,8 +13,4 @@
     <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.35" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NDIS-Pricelist-Generator\" />
-  </ItemGroup>
-
 </Project>

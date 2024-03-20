@@ -6,7 +6,7 @@ namespace PricelistGenerator.Service;
 
 public class NDISSupportCatalogueService
 {
-    public static NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile,
+    public NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile,
         NDISSupportCatalogue ndisSupportCatalogue)
     {
 

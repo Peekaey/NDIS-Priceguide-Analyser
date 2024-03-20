@@ -11,15 +11,18 @@ namespace PricelistGenerator.Handlers;
 
 public class PricelistHandler
 {
-    public static void CreatePRODAPricelist(List<int> MenuChoice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
+    public void CreatePRODAPricelist(List<int> MenuChoice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-        Pricelist pricelist = new Pricelist();
+        CSVHelper csvHelper = new CSVHelper();
+        PricelistService pricelistService = new PricelistService();
         
         foreach (var region in MenuChoice)
         {
+            Pricelist pricelist = new Pricelist();
+
             var selectedRegion = GetMenuChoiceRegionSelection(region);
-            pricelist = PricelistService.CreatePRODAPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
-            var csvFilePath = CSVHelper.ExportPRODAPricelistToCSV(pricelist, spreadsheetFile, selectedRegion);
+            pricelist = pricelistService.CreatePRODAPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
+            var csvFilePath = csvHelper.ExportPRODAPricelistToCSV(pricelist, spreadsheetFile, selectedRegion);
             
             if (csvFilePath.Equals("error"))
             {
@@ -32,15 +35,18 @@ public class PricelistHandler
         }
     }
 
-    public static void CreatePACEPricelist(List<int> MenuChoice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
+    public void CreatePACEPricelist(List<int> MenuChoice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
         Pricelist pricelist = new Pricelist();
+        CSVHelper csvHelper = new CSVHelper();
+
 
         foreach (var region in MenuChoice)
         {
+            PricelistService pricelistService = new PricelistService();
             var selectedRegion = GetMenuChoiceRegionSelection(region);
-            pricelist = PricelistService.CreatePACEPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
-            var csvFilePath = CSVHelper.ExportPACEPricelistToCSV(pricelist, spreadsheetFile, selectedRegion);
+            pricelist = pricelistService.CreatePACEPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
+            var csvFilePath = csvHelper.ExportPACEPricelistToCSV(pricelist, spreadsheetFile, selectedRegion);
             
             if (csvFilePath.Equals("error"))
             {
@@ -54,7 +60,7 @@ public class PricelistHandler
     }
 
 
-    public static String GetMenuChoiceRegionSelection(int MenuChoice)
+    public String GetMenuChoiceRegionSelection(int MenuChoice)
     {
         switch ((PricelistRegions)MenuChoice)
         {

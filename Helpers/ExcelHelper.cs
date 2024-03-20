@@ -6,7 +6,7 @@ namespace PricelistGenerator.Helpers;
 public class ExcelHelper
 {
     
-    public static bool ValidateProvidedFile(string providedFilePath)
+    public bool ValidateProvidedFile(string providedFilePath)
     {
         string trimmedFilePath = RemoveQuotesFromFilePath(providedFilePath);
 
@@ -18,12 +18,12 @@ public class ExcelHelper
         return CheckFileExtensionValid(trimmedFilePath);
     }
     
-    private static bool CheckFileExists(string providedFilePath)
+    private bool CheckFileExists(string providedFilePath)
     {
         return File.Exists(providedFilePath);
     }
     
-    private static bool CheckFileExtensionValid(string providedFilePath)
+    private bool CheckFileExtensionValid(string providedFilePath)
     {
         string fileExtension = GetFileExtension(providedFilePath);
         
@@ -33,7 +33,7 @@ public class ExcelHelper
         return isValidExtension;
     }
     
-    private static string GetFileExtension(string providedFilePath)
+    private String GetFileExtension(string providedFilePath)
     {
         try
         {
@@ -45,7 +45,7 @@ public class ExcelHelper
         }
     }
     
-    public static SpreadsheetFile CreateFileFromProvidedFilePath(string providedFilePath)
+    public SpreadsheetFile CreateFileFromProvidedFilePath(string providedFilePath)
     {
         string trimmedFilePath = RemoveQuotesFromFilePath(providedFilePath);
         SpreadsheetFile spreadsheetFile = new SpreadsheetFile();
@@ -66,7 +66,7 @@ public class ExcelHelper
         return spreadsheetFile;
     }
     
-    private static string RemoveQuotesFromFilePath(string providedFilePath)
+    private String RemoveQuotesFromFilePath(string providedFilePath)
     {
         if (providedFilePath.StartsWith("\"") && providedFilePath.EndsWith("\""))
         {

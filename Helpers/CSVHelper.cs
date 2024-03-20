@@ -10,7 +10,7 @@ namespace PricelistGenerator.Helpers;
 
 public class CSVHelper
 {
-    public static string ExportPRODAPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
+    public string ExportPRODAPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
     {
         try
         {
@@ -68,7 +68,7 @@ public class CSVHelper
         }
     }
     
-     public static string ExportPACEPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
+     public string ExportPACEPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
     {
         try
         {
@@ -125,7 +125,7 @@ public class CSVHelper
         }
     }
 
-    public static String getFileName(string selectedRegion)
+    public String getFileName(string selectedRegion)
     {
         var regionFileName = "";
         switch (selectedRegion)

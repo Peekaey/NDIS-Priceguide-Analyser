@@ -11,7 +11,7 @@ namespace PricelistGenerator.Handlers;
 
 public class MenuHandler
 {
-    private static string GetEnumDescription(PricelistRegions option)
+    private string GetEnumDescription(PricelistRegions option)
     {
         FieldInfo fieldInfo = option.GetType().GetField(option.ToString());
         DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
@@ -38,7 +38,7 @@ public class MenuHandler
         { "Exit", 5 },
     };
     
-    public static void DisplayMainMenu(NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
+    public void DisplayMainMenu(NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
     {
         AnsiConsole.WriteLine("\nProgram Options:");
         foreach (var option in MainMenuOptionMap)
@@ -69,9 +69,8 @@ public class MenuHandler
         
     }
     
-    public static void DisplayRegionMenu(int Choice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
+    private void DisplayRegionMenu(int Choice, NDISSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-        
         AnsiConsole.WriteLine("\nPlease select the regions you wish to generate a pricelist for:");
         foreach (var option in RegionMenuMap)
         {
@@ -101,21 +100,22 @@ public class MenuHandler
                     selectedRegions = selectedRegions + "," + $"[{description}]";
                 }
             }
-                selectedRegions = selectedRegions.TrimEnd(',', ' ');
             
+            selectedRegions = selectedRegions.TrimEnd(',', ' ');
             
             AnsiConsole.WriteLine($"This will generate a pricelist in the directory {spreadsheetFile.Path}" +
                                   $"\nFor the following regions {selectedRegions}");
             if (AnsiConsole.Confirm("Do you want to proceed?"))
             {
+                PricelistHandler pricelistHandler = new PricelistHandler();
                 switch (Choice)
                 {
                     case 1:
-                        PricelistHandler.CreatePRODAPricelist(MenuChoice, ndisSupportCatalogue, spreadsheetFile);
+                        pricelistHandler.CreatePRODAPricelist(MenuChoice, ndisSupportCatalogue, spreadsheetFile);
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
                     case 2:
-                        PricelistHandler.CreatePACEPricelist(MenuChoice, ndisSupportCatalogue, spreadsheetFile);
+                        pricelistHandler.CreatePACEPricelist(MenuChoice, ndisSupportCatalogue, spreadsheetFile);
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
                     case 5:
@@ -134,7 +134,7 @@ public class MenuHandler
         }
     }
 
-    public static void DisplayRegionPreviewMenu()
+    public void DisplayRegionPreviewMenu()
     {
         
     }

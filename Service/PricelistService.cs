@@ -5,7 +5,7 @@ namespace PricelistGenerator.Service;
 
 public class PricelistService
 {
-    public static Pricelist CreatePRODAPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
+    public Pricelist CreatePRODAPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
         string selectedRegion)
     {
         foreach (var supportItem in ndisSupportCatalogue.NDISSupportCatalogueSupportItems)
@@ -44,10 +44,7 @@ public class PricelistService
             pricelistSupportItem.UnitOfMeasure = unit;
 
             // Getting the correct Support Category
-            // Gets the first two characters of the Support Item Number - Used as mapping for Support Category
-            var supportCategoryIdentifier = supportItem.SupportItemNumber.Substring(0, 2);
-            var supportCategory = MapSupportCategory(supportCategoryIdentifier);
-            pricelistSupportItem.SupportCategories = supportCategory;
+            pricelistSupportItem.SupportCategories = supportItem.PRODASupportCategoryName;
 
             // Getting the correct Support Purpose
             var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);
@@ -67,7 +64,7 @@ public class PricelistService
         return pricelist;
     }
     
-    public static Pricelist CreatePACEPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
+    public Pricelist CreatePACEPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
         string selectedRegion)
     {
         foreach (var supportItem in ndisSupportCatalogue.NDISSupportCatalogueSupportItems)
@@ -108,10 +105,7 @@ public class PricelistService
                 pricelistSupportItem.UnitOfMeasure = unit;
 
                 // Getting the correct Support Category
-                // Gets the first two characters of the Support Item Number - Used as mapping for Support Category
-                var supportCategoryIdentifier = supportItem.SupportItemNumber.Substring(0, 2);
-                var supportCategory = MapSupportCategory(supportCategoryIdentifier);
-                pricelistSupportItem.SupportCategories = supportCategory;
+                pricelistSupportItem.SupportCategories = supportItem.PACESupportCategoryName;
 
                 // Getting the correct Support Purpose
                 var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);
@@ -132,7 +126,7 @@ public class PricelistService
         return pricelist;
     }
 
-    public static String MapOutcomeDomain(string supportItem)
+    public String MapOutcomeDomain(string supportItem)
     {
         string outcomeDomain = "";
         
@@ -179,7 +173,7 @@ public class PricelistService
     }
     
     
-    public static String MapPriceControl(string price)
+    public String MapPriceControl(string price)
     {
         string priceControl = "";
         
@@ -199,7 +193,7 @@ public class PricelistService
         return priceControl;
     }
     
-    public static String MapSupportPurpose(string supportItem)
+    public String MapSupportPurpose(string supportItem)
     {
         string supportPurpose = "";
         string supportPurposeIdentifier = supportItem.Substring(supportItem.Length - 1);
@@ -249,9 +243,11 @@ public class PricelistService
     }
     
 
-
-    public static String MapSupportCategory(string supportCategoryIdentifier)
+    // Redundant as Support Category is stored in the NDIS Support Catalogue
+    public String MapSupportCategory(string supportItem)
     {
+        // Gets the first two characters of the Support Item Number - Used as mapping for Support Category
+        var supportCategoryIdentifier = supportItem.Substring(0, 2);
         switch (supportCategoryIdentifier)
         {
             case "01": 
@@ -307,7 +303,7 @@ public class PricelistService
         return supportCategoryIdentifier;
     }
 
-    public static String MapUnitOfMeasure(string unit)
+    public String MapUnitOfMeasure(string unit)
     {
         switch (unit)
         {
