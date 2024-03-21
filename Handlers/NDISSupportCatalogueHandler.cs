@@ -5,14 +5,14 @@ using PricelistGenerator.Service;
 
 namespace PricelistGenerator.Handlers;
 
-public class NDISSupportCatalogueHandler
+public class NdisSupportCatalogueHandler
 {
-    public NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile)
+    public NdisSupportCatalogue ImportNdiSupportCatalogue(SpreadsheetFile spreadsheetFile)
     {
-        NDISSupportCatalogue ndisSupportCatalogue = new NDISSupportCatalogue();
-        NDISSupportCatalogueService NDISSupportCatalogueService = new NDISSupportCatalogueService();
+        NdisSupportCatalogue ndisSupportCatalogue = new NdisSupportCatalogue();
+        NdisSupportCatalogueService ndisSupportCatalogueService = new NdisSupportCatalogueService();
         
-        ndisSupportCatalogue = NDISSupportCatalogueService.importNDISupportCatalogue(spreadsheetFile, ndisSupportCatalogue);
+        ndisSupportCatalogue = ndisSupportCatalogueService.ImportNdiSupportCatalogue(spreadsheetFile, ndisSupportCatalogue);
 
         
         return ndisSupportCatalogue;

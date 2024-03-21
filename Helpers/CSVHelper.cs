@@ -8,14 +8,14 @@ using CsvHelper;
 
 namespace PricelistGenerator.Helpers;
 
-public class CSVHelper
+public class CsvHelper
 {
-    public string ExportPRODAPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
+    public string ExportProdaPricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
     {
         try
         {
             
-            var fileName = "Standard - " + getFileName(selectedRegion);
+            var fileName = "Standard - " + GetFileName(selectedRegion);
             
             // Remove any existing double quotes from the file path
             spreadsheetFile.Path = spreadsheetFile.Path.Trim('"');
@@ -46,7 +46,7 @@ public class CSVHelper
                 {
                     csv.WriteField(supportItem.RegistrationGroup);
                     csv.WriteField(supportItem.SupportPurpose);
-                    csv.WriteField(supportItem.ExternalID);
+                    csv.WriteField(supportItem.ExternalId);
                     csv.WriteField(supportItem.SupportItem);
                     csv.WriteField(supportItem.SupportItemDescription);
                     csv.WriteField(supportItem.UnitOfMeasure);
@@ -68,11 +68,11 @@ public class CSVHelper
         }
     }
     
-     public string ExportPACEPricelistToCSV(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
+     public string ExportPacePricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
     {
         try
         {
-            var fileName = "PACE - " + getFileName(selectedRegion); 
+            var fileName = "PACE - " + GetFileName(selectedRegion); 
             
             // Remove any existing double quotes from the file path
             spreadsheetFile.Path = spreadsheetFile.Path.Trim('"');
@@ -103,7 +103,7 @@ public class CSVHelper
                 {
                     csv.WriteField(supportItem.RegistrationGroup);
                     csv.WriteField(supportItem.SupportPurpose);
-                    csv.WriteField(supportItem.ExternalID);
+                    csv.WriteField(supportItem.ExternalId);
                     csv.WriteField(supportItem.SupportItem);
                     csv.WriteField(supportItem.SupportItemDescription);
                     csv.WriteField(supportItem.UnitOfMeasure);
@@ -125,7 +125,7 @@ public class CSVHelper
         }
     }
 
-    public String getFileName(string selectedRegion)
+    public String GetFileName(string selectedRegion)
     {
         var regionFileName = "";
         switch (selectedRegion)

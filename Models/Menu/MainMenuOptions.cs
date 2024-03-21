@@ -8,7 +8,7 @@ public enum MainMenuOptions
     [Description("Generate Standard PRODA Pricelist")]
     GenerateProdaPricelist = 1,
     [Description("Generate Standard PACE Pricelist")]
-    GeneratePACEPricelist = 2,
+    GeneratePacePricelist = 2,
     [Description("Preview a Regions Pricelist")]
     PreviewPricelist = 3,
     [Description("Pricelist Analysis")]

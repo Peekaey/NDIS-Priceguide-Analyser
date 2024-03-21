@@ -55,7 +55,7 @@ public class ExcelHelper
             spreadsheetFile.Name = Path.GetFileName(providedFilePath);
             spreadsheetFile.Extension = GetFileExtension(providedFilePath);
             spreadsheetFile.FullFilePath = trimmedFilePath;
-            spreadsheetFile.Path = RemoveQuotesFromFilePath(Path.GetDirectoryName(providedFilePath) + "\\");
+            spreadsheetFile.Path = Path.GetDirectoryName(providedFilePath);
             
         }
         catch (Exception e)

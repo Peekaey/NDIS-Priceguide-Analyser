@@ -8,7 +8,7 @@ public class PricelistSupportItem
     [Required]
     public string SupportPurpose { get; set; }
     [Required]
-    public string ExternalID { get; set; }
+    public string ExternalId { get; set; }
     [Required]
     public string SupportItem { get; set; }
     public string SupportItemDescription { get; set; }

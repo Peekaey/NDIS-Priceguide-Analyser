@@ -18,7 +18,7 @@ namespace PricelistGenerator
             
             // Declaring Global Variables to be used Program wide
             SpreadsheetFile catalogFile = new SpreadsheetFile();
-            NDISSupportCatalogue ndisSupportCatalogue = new NDISSupportCatalogue();
+            NdisSupportCatalogue ndisSupportCatalogue = new NdisSupportCatalogue();
             string providedFilePath = "";
             
             while (true)
@@ -35,13 +35,13 @@ namespace PricelistGenerator
                     {
                         
                         catalogFile = excelHelper.CreateFileFromProvidedFilePath(providedFilePath);
-                        AnsiConsole.MarkupLine("File existence validation [bold green1]PASSED[/]"); // Emoji code for green tick
+                        AnsiConsole.MarkupLine("File existence validation [bold green1]PASSED[/]"); 
                         break;
                     }
                     else
                     {
                         AnsiConsole.MarkupLine("File existence validation [bold red]FAILED[/] \n" + 
-                                               "- Ensure that the file exists in the path and ends with .xlsx "); // Emoji code for red cross
+                                               "- Ensure that the file exists in the path and ends with .xlsx "); 
                     }
                 }
                 catch (Exception exception)
@@ -52,12 +52,12 @@ namespace PricelistGenerator
             }
 
             AnsiConsole.MarkupLine(
-                "[dim slowblink]Now importing NDIS Support Catalogue...[/]"); // Emoji code for green tick
+                "[dim slowblink]Now importing NDIS Support Catalogue...[/]");
 
-            NDISSupportCatalogueHandler ndisSupportCatalogueHandler = new NDISSupportCatalogueHandler();
-            ndisSupportCatalogue = ndisSupportCatalogueHandler.importNDISupportCatalogue(catalogFile);
+            NdisSupportCatalogueHandler ndisSupportCatalogueHandler = new NdisSupportCatalogueHandler();
+            ndisSupportCatalogue = ndisSupportCatalogueHandler.ImportNdiSupportCatalogue(catalogFile);
             AnsiConsole.MarkupLine(
-                "NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]"); // Emoji code for green tick
+                "NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]"); 
             
             MenuHandler menuHandler = new MenuHandler();
             menuHandler.DisplayMainMenu(ndisSupportCatalogue, catalogFile);

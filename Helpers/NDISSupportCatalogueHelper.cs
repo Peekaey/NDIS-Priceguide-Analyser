@@ -1,6 +1,6 @@
 namespace PricelistGenerator.Helpers;
 
-public class NDISSupportCatalogueHelper
+public class NdisSupportCatalogueHelper
 {
     
 }

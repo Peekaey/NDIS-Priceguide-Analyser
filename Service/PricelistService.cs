@@ -5,15 +5,15 @@ namespace PricelistGenerator.Service;
 
 public class PricelistService
 {
-    public Pricelist CreatePRODAPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
+    public Pricelist CreateProdaPricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
         string selectedRegion)
     {
-        foreach (var supportItem in ndisSupportCatalogue.NDISSupportCatalogueSupportItems)
+        foreach (var supportItem in ndisSupportCatalogue.NdisSupportCatalogueSupportItems)
         {
 
             PricelistSupportItem pricelistSupportItem = new PricelistSupportItem();
 
-            pricelistSupportItem.ExternalID = supportItem.SupportItemNumber;
+            pricelistSupportItem.ExternalId = supportItem.SupportItemNumber;
             pricelistSupportItem.SupportItem = supportItem.SupportItemName;
             pricelistSupportItem.RegistrationGroup = supportItem.RegistrationGroupName;
 
@@ -22,12 +22,12 @@ public class PricelistService
             switch (selectedRegion)
             {
                 case "ACT":
-                    pricelistSupportItem.Price = supportItem.ACTPrice;
-                    selectedRegionPrice = supportItem.ACTPrice;
+                    pricelistSupportItem.Price = supportItem.ActPrice;
+                    selectedRegionPrice = supportItem.ActPrice;
                     break;
                 case "NT":
-                    pricelistSupportItem.Price = supportItem.NTPrice;
-                    selectedRegionPrice = supportItem.NTPrice;
+                    pricelistSupportItem.Price = supportItem.NtPrice;
+                    selectedRegionPrice = supportItem.NtPrice;
                     break;
                 case "Remote":
                     pricelistSupportItem.Price = supportItem.RemotePrice;
@@ -44,7 +44,7 @@ public class PricelistService
             pricelistSupportItem.UnitOfMeasure = unit;
 
             // Getting the correct Support Category
-            pricelistSupportItem.SupportCategories = supportItem.PRODASupportCategoryName;
+            pricelistSupportItem.SupportCategories = supportItem.ProdaSupportCategoryName;
 
             // Getting the correct Support Purpose
             var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);
@@ -64,17 +64,17 @@ public class PricelistService
         return pricelist;
     }
     
-    public Pricelist CreatePACEPricelist(NDISSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
+    public Pricelist CreatePacePricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
         string selectedRegion)
     {
-        foreach (var supportItem in ndisSupportCatalogue.NDISSupportCatalogueSupportItems)
+        foreach (var supportItem in ndisSupportCatalogue.NdisSupportCatalogueSupportItems)
         {
-            if (supportItem.PACESupportCategoryNumber != supportItem.PRODASupportCategoryNumber 
-                || supportItem.PACESupportCategoryName != supportItem.PRODASupportCategoryName)
+            if (supportItem.PaceSupportCategoryNumber != supportItem.ProdaSupportCategoryNumber 
+                || supportItem.PaceSupportCategoryName != supportItem.ProdaSupportCategoryName)
             { 
                 PricelistSupportItem pricelistSupportItem = new PricelistSupportItem();
 
-                pricelistSupportItem.ExternalID = supportItem.SupportItemNumber + "_PACE";
+                pricelistSupportItem.ExternalId = supportItem.SupportItemNumber + "_PACE";
                 pricelistSupportItem.SupportItem = supportItem.SupportItemName;
                 pricelistSupportItem.RegistrationGroup = supportItem.RegistrationGroupName;
 
@@ -83,12 +83,12 @@ public class PricelistService
                 switch (selectedRegion)
                 {
                     case "ACT":
-                        pricelistSupportItem.Price = supportItem.ACTPrice;
-                        selectedRegionPrice = supportItem.ACTPrice;
+                        pricelistSupportItem.Price = supportItem.ActPrice;
+                        selectedRegionPrice = supportItem.ActPrice;
                         break;
                     case "NT":
-                        pricelistSupportItem.Price = supportItem.NTPrice;
-                        selectedRegionPrice = supportItem.NTPrice;
+                        pricelistSupportItem.Price = supportItem.NtPrice;
+                        selectedRegionPrice = supportItem.NtPrice;
                         break;
                     case "Remote":
                         pricelistSupportItem.Price = supportItem.RemotePrice;
@@ -105,7 +105,7 @@ public class PricelistService
                 pricelistSupportItem.UnitOfMeasure = unit;
 
                 // Getting the correct Support Category
-                pricelistSupportItem.SupportCategories = supportItem.PACESupportCategoryName;
+                pricelistSupportItem.SupportCategories = supportItem.PaceSupportCategoryName;
 
                 // Getting the correct Support Purpose
                 var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);

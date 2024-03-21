@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace PricelistGenerator.Models
 {
-    public class NDISSupportCatalogue
+    public class NdisSupportCatalogue
     {
-        public List<NDISSupportCatalogueSupportItem> NDISSupportCatalogueSupportItems { get; set; }
+        public List<NdisSupportCatalogueSupportItem> NdisSupportCatalogueSupportItems { get; set; }
         
-        public NDISSupportCatalogue()
+        public NdisSupportCatalogue()
         {
-            NDISSupportCatalogueSupportItems = new List<NDISSupportCatalogueSupportItem>();
+            NdisSupportCatalogueSupportItems = new List<NdisSupportCatalogueSupportItem>();
         }
     }
 }

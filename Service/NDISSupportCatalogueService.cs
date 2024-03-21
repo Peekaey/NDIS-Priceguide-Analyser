@@ -4,12 +4,11 @@ using PricelistGenerator.Models.File;
 
 namespace PricelistGenerator.Service;
 
-public class NDISSupportCatalogueService
+public class NdisSupportCatalogueService
 {
-    public NDISSupportCatalogue importNDISupportCatalogue(SpreadsheetFile spreadsheetFile,
-        NDISSupportCatalogue ndisSupportCatalogue)
+    public NdisSupportCatalogue ImportNdiSupportCatalogue(SpreadsheetFile spreadsheetFile,
+        NdisSupportCatalogue ndisSupportCatalogue)
     {
-
         // Importing the Excel File
         var workbook = new XLWorkbook(spreadsheetFile.FullFilePath);
 
@@ -21,13 +20,12 @@ public class NDISSupportCatalogueService
         
         foreach (var row in rows)
         {
-            NDISSupportCatalogueSupportItem ndisSupportCatalogueSupportItem = new NDISSupportCatalogueSupportItem();
+            NdisSupportCatalogueSupportItem ndisSupportCatalogueSupportItem = new NdisSupportCatalogueSupportItem();
 
             int columnIndex = 1; // Skip the first column and start from the second column
             
             foreach (var cell in row.CellsUsed())
             {
-
                 switch (columnIndex)
                 {
                     case 1:ndisSupportCatalogueSupportItem.SupportItemNumber = cell.Value.ToString();
@@ -38,41 +36,41 @@ public class NDISSupportCatalogueService
                         break;
                     case 4:ndisSupportCatalogueSupportItem.RegistrationGroupName = cell.Value.ToString();
                         break;
-                    case 5:ndisSupportCatalogueSupportItem.PRODASupportCategoryNumber = cell.Value.ToString();
+                    case 5:ndisSupportCatalogueSupportItem.ProdaSupportCategoryNumber = cell.Value.ToString();
                         break;
-                    case 6:ndisSupportCatalogueSupportItem.PACESupportCategoryNumber = cell.Value.ToString();
+                    case 6:ndisSupportCatalogueSupportItem.PaceSupportCategoryNumber = cell.Value.ToString();
                         break;
-                    case 7:ndisSupportCatalogueSupportItem.PRODASupportCategoryName = cell.Value.ToString();
+                    case 7:ndisSupportCatalogueSupportItem.ProdaSupportCategoryName = cell.Value.ToString();
                         break;
-                    case 8:ndisSupportCatalogueSupportItem.PACESupportCategoryName = cell.Value.ToString();
+                    case 8:ndisSupportCatalogueSupportItem.PaceSupportCategoryName = cell.Value.ToString();
                         break;
                     case 9:ndisSupportCatalogueSupportItem.Unit = cell.Value.ToString();
                         break;
-                    case 10:ndisSupportCatalogueSupportItem.ACTPrice = cell.Value.ToString();
+                    case 10:ndisSupportCatalogueSupportItem.ActPrice = cell.Value.ToString();
                         break;
-                    case 11:ndisSupportCatalogueSupportItem.NSWPrice = cell.Value.ToString();
+                    case 11:ndisSupportCatalogueSupportItem.NswPrice = cell.Value.ToString();
                         break;
-                    case 12:ndisSupportCatalogueSupportItem.NTPrice = cell.Value.ToString();
+                    case 12:ndisSupportCatalogueSupportItem.NtPrice = cell.Value.ToString();
                         break;
-                    case 13:ndisSupportCatalogueSupportItem.QLDPrice = cell.Value.ToString();
+                    case 13:ndisSupportCatalogueSupportItem.QldPrice = cell.Value.ToString();
                         break;
-                    case 14:ndisSupportCatalogueSupportItem.SAPrice = cell.Value.ToString();
+                    case 14:ndisSupportCatalogueSupportItem.SaPrice = cell.Value.ToString();
                         break;
-                    case 15:ndisSupportCatalogueSupportItem.TASPrice = cell.Value.ToString();
+                    case 15:ndisSupportCatalogueSupportItem.TasPrice = cell.Value.ToString();
                         break;
-                    case 16:ndisSupportCatalogueSupportItem.VICPrice = cell.Value.ToString();
+                    case 16:ndisSupportCatalogueSupportItem.VicPrice = cell.Value.ToString();
                         break;
-                    case 17:ndisSupportCatalogueSupportItem.WAPrice = cell.Value.ToString();
+                    case 17:ndisSupportCatalogueSupportItem.WaPrice = cell.Value.ToString();
                         break;
                     case 18:ndisSupportCatalogueSupportItem.RemotePrice = cell.Value.ToString();
                         break;
                     case 19:ndisSupportCatalogueSupportItem.VeryRemotePrice = cell.Value.ToString();
                         break;
                 }
-                columnIndex++; // Move to the next column index
+                columnIndex++;
             }
 
-            ndisSupportCatalogue.NDISSupportCatalogueSupportItems.Add(ndisSupportCatalogueSupportItem);
+            ndisSupportCatalogue.NdisSupportCatalogueSupportItems.Add(ndisSupportCatalogueSupportItem);
         }
         return ndisSupportCatalogue;
     }
