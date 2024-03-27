@@ -9,10 +9,12 @@ public enum MainMenuOptions
     GenerateProdaPricelist = 1,
     [Description("Generate Standard PACE Pricelist")]
     GeneratePacePricelist = 2,
+    [Description("Generate Custom Pricelist")]
+    GenerateCustomPricelist = 3,
     [Description("Preview a Regions Pricelist")]
-    PreviewPricelist = 3,
+    PreviewPricelist = 4,
     [Description("Pricelist Analysis")]
-    PricelistAnalysis = 4,
-    [Description("Close Program")]
-    Exit = 5,
+    PricelistAnalysis = 5,
+    [Description("Exit")]
+    Exit = 6
 }

@@ -23,6 +23,15 @@ public class PreviewService
         var index = 0;
         foreach (var supportItem in pricelist.PricelistSupportItems)
         {
+            var price = "";
+            if (!string.IsNullOrEmpty((supportItem.Price)))
+            {
+                price = supportItem.Price;
+            }
+            else
+            {
+                price = "";
+            }
             
             table.AddRow(
                 index.ToString(),
@@ -32,7 +41,7 @@ public class PreviewService
                 supportItem.SupportItem,
                 "null",
                 supportItem.UnitOfMeasure,
-                supportItem.Price,
+                price,
                 supportItem.PriceControl,
                 supportItem.SupportCategories,
                 supportItem.SupportPurpose
