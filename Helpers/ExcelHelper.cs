@@ -1,9 +1,9 @@
-using PricelistGenerator.Exceptions;
+using PricelistGenerator.Interfaces.Helpers;
 using PricelistGenerator.Models.File;
 
 namespace PricelistGenerator.Helpers;
 
-public class ExcelHelper
+public class ExcelHelper: IExcelHelper
 {
     
     public bool ValidateProvidedFile(string providedFilePath)
@@ -41,7 +41,7 @@ public class ExcelHelper
         }
         catch (Exception e)
         {
-            throw new FileValidationException("Error getting file extension", e);
+            throw new Exception("Error getting file extension", e);
         }
     }
     
@@ -60,7 +60,7 @@ public class ExcelHelper
         }
         catch (Exception e)
         {
-            throw new FileCreationException("Error creating file from provided file path: " + e.Message);
+            throw new Exception("Error creating file from provided file path: " + e.Message);
         }
 
         return spreadsheetFile;
@@ -74,6 +74,4 @@ public class ExcelHelper
         }
         return providedFilePath;
     }
-    
-    
 }
