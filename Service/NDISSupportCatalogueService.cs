@@ -1,10 +1,11 @@
 using ClosedXML.Excel;
+using PricelistGenerator.Interfaces;
 using PricelistGenerator.Models;
 using PricelistGenerator.Models.File;
 
 namespace PricelistGenerator.Service;
 
-public class NdisSupportCatalogueService
+public class NdisSupportCatalogueService: INDISSupportCatalogueService
 {
     public NdisSupportCatalogue ImportNdiSupportCatalogue(SpreadsheetFile spreadsheetFile,
         NdisSupportCatalogue ndisSupportCatalogue)

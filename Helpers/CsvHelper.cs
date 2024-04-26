@@ -5,17 +5,20 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using CsvHelper;
+using PricelistGenerator.Interfaces.Helpers;
+using PricelistGenerator.Models.Menu;
 
 namespace PricelistGenerator.Helpers;
 
-public class CsvHelper
+public class CsvHelper: ICsvHelper
 {
-    public string ExportProdaPricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
+    public string ExportProdaPricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, RegionMenuOptions selectedRegion)
     {
+        PricelistHelper pricelistHelper = new PricelistHelper();
         try
         {
-            
-            var fileName = "Standard - " + GetFileName(selectedRegion);
+            var regionName = pricelistHelper.GetRegionDescription(selectedRegion);
+            var fileName = "Standard - " + regionName + " - " + DateTime.Now.ToString("dd-MM-yyyy") + ".csv";
             
             // Remove any existing double quotes from the file path
             spreadsheetFile.Path = spreadsheetFile.Path.Trim('"');
@@ -57,7 +60,6 @@ public class CsvHelper
                     csv.NextRecord();
                 }
             }
-
             return filePath;
         }
         catch (Exception e)
@@ -68,11 +70,13 @@ public class CsvHelper
         }
     }
     
-     public string ExportPacePricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, string selectedRegion)
-    {
+     public string ExportPacePricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, RegionMenuOptions selectedRegion)
+     {
+         PricelistHelper pricelistHelper = new PricelistHelper();
         try
         {
-            var fileName = "PACE - " + GetFileName(selectedRegion); 
+            var regionName = pricelistHelper.GetRegionDescription(selectedRegion);
+            var fileName = "PACE - " + regionName + " - " + DateTime.Now.ToString("dd-MM-yyyy") + ".csv";
             
             // Remove any existing double quotes from the file path
             spreadsheetFile.Path = spreadsheetFile.Path.Trim('"');
@@ -114,7 +118,6 @@ public class CsvHelper
                     csv.NextRecord();
                 }
             }
-
             return filePath;
         }
         catch (Exception e)
@@ -124,28 +127,5 @@ public class CsvHelper
             return error;
         }
     }
-
-    public String GetFileName(string selectedRegion)
-    {
-        var regionFileName = "";
-        switch (selectedRegion)
-        {
-            case "ACT":
-                regionFileName = "ACT.NSW.QLD.VIC";
-                break;
-            case "NT":
-                regionFileName = "NT.SA.TAS.WA";
-                break;
-            case "Remote":
-                regionFileName = "Remote";
-                break;
-            case "VeryRemote":
-                regionFileName = "Very Remote";
-                break;
-        }
-        
-        return $"{regionFileName} {DateTime.Now.ToString("dd-MM-yyyy")}.csv";
-    }
-
     
 }

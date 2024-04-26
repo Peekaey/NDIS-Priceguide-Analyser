@@ -1,24 +1,25 @@
+using System.ComponentModel;
+using PricelistGenerator.Interfaces.Helpers;
 using PricelistGenerator.Models.Mappings;
-
+using PricelistGenerator.Models.Menu;
 namespace PricelistGenerator.Helpers;
 
-public class PricelistHelper
+public class PricelistHelper: IPricelistHelper
 {
-    public String GetMenuChoiceRegionSelection(int menuChoice)
+
+
+    public RegionMenuOptions GetSelectedRegion(int region)
     {
-        switch ((PricelistRegions)menuChoice)
-        {
-            case PricelistRegions.Nsw:
-                return "ACT";
-            case PricelistRegions.Nt:
-                return "NT";
-            case PricelistRegions.Remote:
-                return "Remote";
-            case PricelistRegions.VeryRemote:
-                return "VeryRemote";
-            default:
-                return "Invalid Choice";
-        }
+        RegionMenuOptions regionDescription = (RegionMenuOptions)region;
+        return regionDescription;
+    }
+    
+    public string GetRegionDescription<TEnum>(TEnum value) where TEnum : Enum
+    {
+        var fieldInfo = value.GetType().GetField(value.ToString());
+        var descriptionAttribute =
+            (DescriptionAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
+        return descriptionAttribute != null ? descriptionAttribute.Description : value.ToString();
     }
     
 }

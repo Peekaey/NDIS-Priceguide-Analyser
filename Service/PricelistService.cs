@@ -1,12 +1,15 @@
 using DocumentFormat.OpenXml.Wordprocessing;
+using PricelistGenerator.Interfaces;
+using PricelistGenerator.Interfaces.Service;
 using PricelistGenerator.Models;
+using PricelistGenerator.Models.Menu;
 
 namespace PricelistGenerator.Service;
 
-public class PricelistService
+public class PricelistService: IPricelistService
 {
     public Pricelist CreateProdaPricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
-        string selectedRegion)
+        RegionMenuOptions selectedRegion)
     {
         foreach (var supportItem in ndisSupportCatalogue.NdisSupportCatalogueSupportItems)
         {
@@ -21,19 +24,19 @@ public class PricelistService
             var selectedRegionPrice = "";
             switch (selectedRegion)
             {
-                case "ACT":
+                case RegionMenuOptions.Act:
                     pricelistSupportItem.Price = supportItem.ActPrice;
                     selectedRegionPrice = supportItem.ActPrice;
                     break;
-                case "NT":
+                case RegionMenuOptions.Nt:
                     pricelistSupportItem.Price = supportItem.NtPrice;
                     selectedRegionPrice = supportItem.NtPrice;
                     break;
-                case "Remote":
+                case RegionMenuOptions.Remote:
                     pricelistSupportItem.Price = supportItem.RemotePrice;
                     selectedRegionPrice = supportItem.RemotePrice;
                     break;
-                case "VeryRemote":
+                case RegionMenuOptions.VeryRemote:
                     pricelistSupportItem.Price = supportItem.VeryRemotePrice;
                     selectedRegionPrice = supportItem.VeryRemotePrice;
                     break;
@@ -65,7 +68,7 @@ public class PricelistService
     }
     
     public Pricelist CreatePacePricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist,
-        string selectedRegion)
+        RegionMenuOptions selectedRegion)
     {
         foreach (var supportItem in ndisSupportCatalogue.NdisSupportCatalogueSupportItems)
         {
@@ -82,19 +85,19 @@ public class PricelistService
                 var selectedRegionPrice = "";
                 switch (selectedRegion)
                 {
-                    case "ACT":
+                    case RegionMenuOptions.Act :
                         pricelistSupportItem.Price = supportItem.ActPrice;
                         selectedRegionPrice = supportItem.ActPrice;
                         break;
-                    case "NT":
+                    case RegionMenuOptions.Nt:
                         pricelistSupportItem.Price = supportItem.NtPrice;
                         selectedRegionPrice = supportItem.NtPrice;
                         break;
-                    case "Remote":
+                    case RegionMenuOptions.Remote:
                         pricelistSupportItem.Price = supportItem.RemotePrice;
                         selectedRegionPrice = supportItem.RemotePrice;
                         break;
-                    case "VeryRemote":
+                    case RegionMenuOptions.VeryRemote:
                         pricelistSupportItem.Price = supportItem.VeryRemotePrice;
                         selectedRegionPrice = supportItem.VeryRemotePrice;
                         break;
@@ -126,7 +129,7 @@ public class PricelistService
         return pricelist;
     }
 
-    public String MapOutcomeDomain(string supportItem)
+    private String MapOutcomeDomain(string supportItem)
     {
         string outcomeDomain = "";
         
@@ -167,13 +170,12 @@ public class PricelistService
             default:
                 outcomeDomain = "Outcome Domain Not Mapped";
                 break;
-            
         }
         return outcomeDomain;
     }
     
     
-    public String MapPriceControl(string price)
+    private String MapPriceControl(string price)
     {
         string priceControl = "";
         
@@ -193,7 +195,7 @@ public class PricelistService
         return priceControl;
     }
     
-    public String MapSupportPurpose(string supportItem)
+    private String MapSupportPurpose(string supportItem)
     {
         string supportPurpose = "";
         string supportPurposeIdentifier = supportItem.Substring(supportItem.Length - 1);
@@ -242,68 +244,7 @@ public class PricelistService
         }
     }
     
-
-    // Redundant as Support Category is stored in the NDIS Support Catalogue
-    public String MapSupportCategory(string supportItem)
-    {
-        // Gets the first two characters of the Support Item Number - Used as mapping for Support Category
-        var supportCategoryIdentifier = supportItem.Substring(0, 2);
-        switch (supportCategoryIdentifier)
-        {
-            case "01": 
-                supportCategoryIdentifier = "Assistance with Daily Life";
-                break;
-            case "02":
-                supportCategoryIdentifier = "Transport";
-                break;
-            case "03":
-                supportCategoryIdentifier = "Consumables";
-                break;
-            case "04":
-                supportCategoryIdentifier = "Assistance with social and community participation";
-                break;
-            case "05":
-                supportCategoryIdentifier = "Assistive Technology";
-                break;
-            case "06":
-                supportCategoryIdentifier = "Home Modification";
-                break;
-            case "07":
-                supportCategoryIdentifier = "Support Coordination";
-                break;
-            case "08":
-                supportCategoryIdentifier = "Improved Living Arrangements";
-                break;
-            case "09":
-                supportCategoryIdentifier = "Increased Social and Community Participation";
-                break;
-            case "10":
-                supportCategoryIdentifier = "Finding and Keeping a Job";
-                break;
-            case "11":
-                supportCategoryIdentifier = "Improved Relationships";
-                break;
-            case "12":
-                supportCategoryIdentifier = "Improved Health and Wellbeing";
-                break;
-            case "13":
-                supportCategoryIdentifier = "Improved Learning";
-                break;
-            case "14":
-                supportCategoryIdentifier = "Improved Life Choices";
-                break;
-            case "15":
-                supportCategoryIdentifier = "Improved Daily Living Skills";
-                break;
-            default:
-                supportCategoryIdentifier = "Unmapped Support Category";
-                break;
-        }
-
-        return supportCategoryIdentifier;
-    }
-
-    public String MapUnitOfMeasure(string unit)
+    private String MapUnitOfMeasure(string unit)
     {
         switch (unit)
         {
@@ -331,6 +272,4 @@ public class PricelistService
         }
         return unit;
     }
-    
-    
 }

@@ -1,29 +1,42 @@
 using System.Runtime.InteropServices.ComTypes;
 using DocumentFormat.OpenXml.Office2010.CustomUI;
 using PricelistGenerator.Helpers;
+using PricelistGenerator.Interfaces.Handler;
+using PricelistGenerator.Interfaces.Helpers;
+using PricelistGenerator.Interfaces.Service;
 using PricelistGenerator.Models;
 using PricelistGenerator.Models.File;
 using PricelistGenerator.Models.Mappings;
+using PricelistGenerator.Models.Menu;
 using PricelistGenerator.Service;
 using Spectre.Console;
 
 namespace PricelistGenerator.Handlers;
 
-public class PricelistHandler
+public class PricelistHandler : IPricelistHandler
 {
+    private IPricelistService _pricelistService;
+    private ICsvHelper _csvHelper;
+    private IPricelistHelper _pricelistHelper;
+    
+    public PricelistHandler(IPricelistService pricelistService, ICsvHelper csvHelper, IPricelistHelper pricelistHelper)
+    {
+        _pricelistService = pricelistService;
+        _csvHelper = csvHelper;
+        _pricelistHelper = pricelistHelper;
+    }
+    
+    
     public void ExportProdaPricelist(List<int> menuChoice, NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-        Helpers.CsvHelper csvHelper = new Helpers.CsvHelper();
-        PricelistService pricelistService = new PricelistService();
-        PricelistHelper pricelistHelper = new PricelistHelper();
-
+        
         foreach (var region in menuChoice)
         {
             Pricelist pricelist = new Pricelist();
 
-            var selectedRegion = pricelistHelper.GetMenuChoiceRegionSelection(region);
+            var selectedRegion = _pricelistHelper.GetSelectedRegion(region);
             pricelist = CreateProdaPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
-            var csvFilePath = csvHelper.ExportProdaPricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
+            var csvFilePath = _csvHelper.ExportProdaPricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
             
             if (csvFilePath.Equals("error"))
             {
@@ -38,16 +51,12 @@ public class PricelistHandler
 
     public void ExportPacePricelist(List<int> menuChoice, NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-        Helpers.CsvHelper csvHelper = new Helpers.CsvHelper();
-        PricelistService pricelistService = new PricelistService();
-        PricelistHelper pricelistHelper = new PricelistHelper();
-
         foreach (var region in menuChoice)
         {
             Pricelist pricelist = new Pricelist();
-            var selectedRegion = pricelistHelper.GetMenuChoiceRegionSelection(region);
+            var selectedRegion = _pricelistHelper.GetSelectedRegion(region);
             pricelist = CreatePacePricelist(ndisSupportCatalogue, pricelist, selectedRegion);
-            var csvFilePath = csvHelper.ExportPacePricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
+            var csvFilePath = _csvHelper.ExportPacePricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
             
             if (csvFilePath.Equals("error"))
             {
@@ -60,18 +69,15 @@ public class PricelistHandler
         }
     }
 
-    public Pricelist CreateProdaPricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist, string selectedRegion)
+    public Pricelist CreateProdaPricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist, RegionMenuOptions selectedRegion)
     {
-        PricelistService pricelistService = new PricelistService();
-        return pricelistService.CreateProdaPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
+        return _pricelistService.CreateProdaPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
     }
 
-    public Pricelist CreatePacePricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist, string selectedRegion)
+    public Pricelist CreatePacePricelist(NdisSupportCatalogue ndisSupportCatalogue, Pricelist pricelist, RegionMenuOptions selectedRegion)
     {
-        PricelistService pricelistService = new PricelistService();
-        return pricelistService.CreatePacePricelist(ndisSupportCatalogue, pricelist, selectedRegion);
+        return _pricelistService.CreatePacePricelist(ndisSupportCatalogue, pricelist, selectedRegion);
     }
-    
     
 }
     

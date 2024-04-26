@@ -1,7 +1,6 @@
 using System.ComponentModel;
-using System.Reflection;
-using DocumentFormat.OpenXml.Office.CustomUI;
 using PricelistGenerator.Helpers;
+using PricelistGenerator.Interfaces.Handler;
 using PricelistGenerator.Models;
 using PricelistGenerator.Models.File;
 using PricelistGenerator.Models.Mappings;
@@ -10,216 +9,218 @@ using Spectre.Console;
 
 namespace PricelistGenerator.Handlers;
 
-public class MenuHandler
+public class MenuHandler : IMenuHandler
 {
-    private string GetRegionEnumDescription(PricelistRegions option)
+    private readonly IPricelistHandler _pricelistHandler;
+    private readonly IPreviewHandler _previewHandler;
+    private readonly IPricelistAnalysisHandler _pricelistAnalysisHandler;
+    private readonly INDISSupportCatalogueHandler _ndisSupportCatalogueHandler;
+
+    public MenuHandler(IPricelistHandler pricelistHandler, IPreviewHandler previewHandler,
+        IPricelistAnalysisHandler pricelistAnalysisHandler,
+        INDISSupportCatalogueHandler ndisSupportCatalogueHandler)
     {
-        FieldInfo fieldInfo = option.GetType().GetField(option.ToString());
-        DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
-        return attribute == null ? option.ToString() : attribute.Description;
-        
+        _pricelistHandler = pricelistHandler;
+        _previewHandler = previewHandler;
+        _pricelistAnalysisHandler = pricelistAnalysisHandler;
+        _ndisSupportCatalogueHandler = ndisSupportCatalogueHandler;
     }
 
-    private string GetPricelistTypeEnumDescription(PricelistType pricelistType)
+    private string GetEnumDescription<TEnum>(TEnum value) where TEnum : Enum
     {
-        FieldInfo fieldInfo = pricelistType.GetType().GetField(pricelistType.ToString());
-        DescriptionAttribute attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
-        return attribute == null ? pricelistType.ToString() : attribute.Description;
+        var fieldInfo = value.GetType().GetField(value.ToString());
+        var descriptionAttribute =
+            (DescriptionAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DescriptionAttribute));
+        return descriptionAttribute != null ? descriptionAttribute.Description : value.ToString();
     }
-    
-    private static Dictionary<string, int> MainMenuOptionMap { get; } = new Dictionary<string, int>()
-    {
-        { "Generate Standard PRODA Pricelist", 1 },
-        { "Generate Standard PACE Pricelist ", 2 },
-        { "Generate Custom Pricelist", 3},
-        { "Preview a Regions Pricelist", 4 },
-        { "Pricelist Analysis", 5 },
-        { "Exit", 6 },
-    };
-    
-    private static Dictionary<string, int> RegionMenuMap { get; } = new Dictionary<string, int>()
-    {
-        { "ACT, NSW, QLD, VIC Price", 1 },
-        { "NT, SA, TAS, WA Pricelist", 2 },
-        { "Remote Pricelist", 3 },
-        { "Very Remote Pricelist", 4 },
-        { "Exit", 5 },
-    };
 
-    private static Dictionary<string, int> PricelistTypeMap { get; } = new Dictionary<string, int>()
+    private Dictionary<int, string> GetMenuChoices<TEnum>() where TEnum : Enum
     {
-        { "PRODA Pricelist", 1 },
-        { "PACE Pricelist", 2 },
-        { "Custom Pricelist", 3 },
-        { "Exit", 4 }
-    };
-    
+        var values = Enum.GetValues(typeof(TEnum));
+        var menuChoices = new Dictionary<int, string>();
+
+        foreach (var value in values)
+        {
+            if (value is TEnum enumValue)
+            {
+                var description = GetEnumDescription(enumValue);
+                menuChoices.Add((int)Convert.ChangeType(enumValue, typeof(int)), description);
+            }
+        }
+
+        return menuChoices;
+    }
+
+
     public void DisplayMainMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
     {
         AnsiConsole.WriteLine("\nProgram Options:");
-        foreach (var option in MainMenuOptionMap)
+
+        var menuChoices = GetMenuChoices<MainMenuOptions>();
+
+        foreach (var menuChoice in menuChoices)
         {
-            AnsiConsole.WriteLine($"[{option.Value}] {option.Key}");
+            AnsiConsole.WriteLine($"[{menuChoice.Key}] {menuChoice.Value}");
         }
-        
-        var menuChoice = AnsiConsole.Prompt(new SelectionPrompt<int>().Title("\nWhat would you like to do?")
-            .PageSize(MainMenuOptionMap.Count)
-            .AddChoices(MainMenuOptionMap.Values));
-        
-        switch (menuChoice)
+
+        var selectedIndex = AnsiConsole.Prompt(new SelectionPrompt<int>()
+            .Title("\nWhat would you like to do?")
+            .PageSize(menuChoices.Count)
+            .AddChoices(menuChoices.Keys));
+
+        var selectedEnum = (MainMenuOptions)selectedIndex;
+
+        switch (selectedEnum)
         {
-            case 1: DisplayExportRegionMenu(1, ndisSupportCatalogue, catalogFile);
+            case MainMenuOptions.GenerateProdaPricelist:
+                DisplayExportRegionMenu(selectedEnum, ndisSupportCatalogue, catalogFile);
                 break;
-            case 2: DisplayExportRegionMenu(2, ndisSupportCatalogue, catalogFile);
+            case MainMenuOptions.GeneratePacePricelist:
+                DisplayExportRegionMenu(selectedEnum, ndisSupportCatalogue, catalogFile);
                 break;
-            case 3: AnsiConsole.WriteLine("Generate Custom Pricelist");
+            case MainMenuOptions.GenerateCustomPricelist:
+                AnsiConsole.WriteLine("Generate Custom Pricelist");
                 break;
-            case 4: DisplayRegionPreviewMenu(ndisSupportCatalogue, catalogFile);
+            case MainMenuOptions.PreviewPricelist:
+                DisplayRegionPreviewMenu(ndisSupportCatalogue, catalogFile);
                 break;
-            case 5: AnsiConsole.WriteLine("\nExit");
+            case MainMenuOptions.PricelistAnalysis:
+                DisplayPricelistAnalysisMenu(ndisSupportCatalogue, catalogFile);
                 break;
-            default: 
-                AnsiConsole.WriteLine("Pricelist Analysis");
+            case MainMenuOptions.Exit:
+                break;
+            default:
+                DisplayMainMenu(ndisSupportCatalogue, catalogFile);
                 break;
         }
-        
     }
-    
-    private void DisplayExportRegionMenu(int choice, NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
+
+    private void DisplayExportRegionMenu(MainMenuOptions choosenOption, NdisSupportCatalogue ndisSupportCatalogue,
+        SpreadsheetFile spreadsheetFile)
     {
         AnsiConsole.WriteLine("\nPlease select the regions you wish to generate a pricelist for:");
-        foreach (var option in RegionMenuMap)
+
+        var menuChoices = GetMenuChoices<RegionMenuOptions>();
+        foreach (var menuChoice in menuChoices)
         {
-            AnsiConsole.WriteLine($"[{option.Value}] {option.Key}");
+            AnsiConsole.WriteLine($"[{menuChoice.Key}] {menuChoice.Value}");
         }
-        
-        var menuChoice = AnsiConsole.Prompt(
+
+        var selectedIndexes = AnsiConsole.Prompt(
             new MultiSelectionPrompt<int>()
                 .Title("")
                 .Required()
-                .PageSize(RegionMenuMap.Count)
+                .PageSize(menuChoices.Count)
                 .InstructionsText(
                     "[grey](Press [blue]<space>[/] to select a region, " +
                     "[green]<enter>[/] to accept)[/]" +
                     "\n        [italic]Toggle 5 only to go back to main menu[/]")
-                .AddChoices(RegionMenuMap.Values));
+                .AddChoices(menuChoices.Keys));
 
-        if (!menuChoice.Contains(5) && menuChoice.Count > 0)
+        var selectedRegionsList = selectedIndexes.Select(index => menuChoices[index]).ToList();
+        var returnToMenu = false;
+        var selectedRegionsText = "";
+        foreach (var region in selectedRegionsList)
         {
-            var selectedRegions = "";
-            foreach (var region in menuChoice)
+            selectedRegionsText = selectedRegionsText + "," + "[" + region + "]";
+            if (region == RegionMenuOptions.Exit.ToString())
             {
-                if (Enum.IsDefined(typeof(PricelistRegions), region))
-                {
-                    var enumMember = (PricelistRegions)region;
-                    var description = GetRegionEnumDescription(enumMember);
-                    selectedRegions = selectedRegions + "," + $"[{description}]";
-                }
+                returnToMenu = true;
             }
-            
-            selectedRegions = selectedRegions.TrimEnd(',', ' ');
-            
-            AnsiConsole.WriteLine($"This will generate a pricelist in the directory {spreadsheetFile.Path}" +
-                                  $"\nFor the following regions {selectedRegions}");
+        }
+
+        if (returnToMenu == true)
+        {
+            DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
+        }
+        else
+        {
+            AnsiConsole.WriteLine($"This will generate a pricelist in the directory: {spreadsheetFile.Path}" +
+                                  $"\nFor the following regions {selectedRegionsText}");
             if (AnsiConsole.Confirm("Do you want to proceed?"))
             {
-                PricelistHandler pricelistHandler = new PricelistHandler();
-                switch (choice)
+
+                switch (choosenOption)
                 {
-                    case 1:
-                        pricelistHandler.ExportProdaPricelist(menuChoice, ndisSupportCatalogue, spreadsheetFile);
+                    case MainMenuOptions.GenerateProdaPricelist:
+                        _pricelistHandler.ExportProdaPricelist(selectedIndexes, ndisSupportCatalogue, spreadsheetFile);
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
-                    case 2:
-                        pricelistHandler.ExportPacePricelist(menuChoice, ndisSupportCatalogue, spreadsheetFile);
+                    case MainMenuOptions.GeneratePacePricelist:
+                        _pricelistHandler.ExportPacePricelist(selectedIndexes, ndisSupportCatalogue, spreadsheetFile);
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
-                    case 5:
+                    default:
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
                 }
+
             }
             else
             {
                 DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
             }
         }
-        else
-        {
-            DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
-        }
     }
 
-    public void DisplayRegionPreviewMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
+    private void DisplayRegionPreviewMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-        PreviewHandler previewHandler = new PreviewHandler();
-        PricelistHelper pricelistHelper = new PricelistHelper();
+
+        var menuChoices = GetMenuChoices<RegionMenuOptions>();
         AnsiConsole.WriteLine("\nRegion Options:");
-        foreach (var option in RegionMenuMap)
+        foreach (var option in menuChoices)
         {
-            AnsiConsole.WriteLine($"[{option.Value}] {option.Key}");
+            AnsiConsole.WriteLine($"{option.Key} [{option.Value}]");
         }
-        
-        var menuChoice = AnsiConsole.Prompt(new SelectionPrompt<int>().Title("\nPlease select the region you wish " +
-                                                                             "to preview the pricelist for?")
-            .PageSize(RegionMenuMap.Count)
-            .AddChoices(RegionMenuMap.Values));
-        
-        if (menuChoice != 5 && menuChoice > 0)
+
+        var selectedIndex = AnsiConsole.Prompt(new SelectionPrompt<int>().Title
+            ("\nPlease select the region you wish " +
+             "to preview the pricelist for?")
+            .PageSize(menuChoices.Count)
+            .AddChoices(menuChoices.Keys));
+
+        var selectedEnum = (RegionMenuOptions)selectedIndex;
+
+        if (selectedEnum != (RegionMenuOptions.Exit))
         {
-
-            // foreach (var option in PricelistTypeMap)
-            // {
-            //     AnsiConsole.WriteLine($"[{option.Value}] {option.Key}");
-            // }
-            
-            var pricelistChoice = AnsiConsole.Prompt(new SelectionPrompt<int>().Title("\nPlease select the type of pricelist"+
+            var priceListTypes = GetMenuChoices<PricelistTypeMenuOptions>();
+            var pricelistChoice = AnsiConsole.Prompt(new SelectionPrompt<int>().Title(
+                    "\nPlease select the type of pricelist" +
                     " you wish to preview" + "\n Proda(1) Pace(2) Custom(3) Exit(4)")
-                .PageSize(PricelistTypeMap.Count)
-                .AddChoices(PricelistTypeMap.Values));
+                .PageSize(priceListTypes.Count)
+                .AddChoices(priceListTypes.Keys));
 
-            switch (pricelistChoice)
+            var selectedPricelistEnum = (PricelistTypeMenuOptions)pricelistChoice;
+            if (selectedPricelistEnum != PricelistTypeMenuOptions.Exit)
             {
-                case 4:
-                    DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
-                    break;
-                default:
-                    break;
-            }
-            
-            var selectedRegionDescription = "";
-            if (Enum.IsDefined(typeof(PricelistRegions), menuChoice))
-            {
-                var regionEnum = (PricelistRegions)menuChoice;
-                selectedRegionDescription = GetRegionEnumDescription(regionEnum);
-
-            }
-            
-            var selectedPricelistType = "";
-            if (Enum.IsDefined(typeof(PricelistType), pricelistChoice))
-            {
-                var pricelistEnum = (PricelistType)pricelistChoice;
-                selectedPricelistType = GetPricelistTypeEnumDescription(pricelistEnum);
-            }
-            
-            AnsiConsole.WriteLine($"This will display a preview of the pricelist type [underline]{selectedPricelistType}[/] for" +
-                                  $"\nregion [underline]{selectedRegionDescription}[/]");
-            
-            if (AnsiConsole.Confirm("Do you want to proceed?"))
-            {
-                switch (pricelistChoice)
+                var selectedRegionDescription = GetEnumDescription(selectedEnum);
+                
+                
+                var selectedPricelistTypeDescription = GetEnumDescription(selectedPricelistEnum);
+                
+                AnsiConsole.WriteLine(
+                    $"This will display a preview of the pricelist type [underline]{selectedPricelistTypeDescription}[/] for" +
+                    $"\nregion [underline]{selectedRegionDescription}[/]");
+                if (AnsiConsole.Confirm("Do you want to proceed?"))
                 {
-                    case 1:
-                        previewHandler.RenderProdaPricelist(menuChoice, ndisSupportCatalogue);
-                        DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
-                        break;
-                    case 2:
-                        previewHandler.RenderPacePricelist(menuChoice, ndisSupportCatalogue);
-                        DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
-                        break;
-                    case 5:
-                        DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
-                        break;
+                    switch (selectedPricelistEnum)
+                    {
+                        case PricelistTypeMenuOptions.Proda:
+                            _previewHandler.RenderProdaPricelist(selectedIndex, ndisSupportCatalogue);
+                            DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
+                            break;
+                        case PricelistTypeMenuOptions.Pace:
+                            _previewHandler.RenderPacePricelist(selectedIndex, ndisSupportCatalogue);
+                            DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
+                            break;
+                        default:
+                            DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
+                            break;
+                    }
+                }
+                else
+                {
+                    DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                 }
             }
             else
@@ -232,5 +233,92 @@ public class MenuHandler
             DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
         }
     }
-    
+
+    private void DisplayPricelistAnalysisMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
+    {
+        NdisSupportCatalogue
+            oldNdisSupportCatalogue = new NdisSupportCatalogue();
+        SpreadsheetFile oldcatalogFile = new SpreadsheetFile();
+
+        string providedFilePath = "";
+
+        // Need to refactor this 
+        while (true)
+        {
+            providedFilePath =
+                AnsiConsole.Ask<string>(
+                    "[bold white]Enter Full File Path of the Old NDIS Support Catalogue[/]\n" +
+                    "[underline olive]Starting with C:\\ and ending with filename.xlsx :[/]");
+            try
+            {
+                ExcelHelper excelHelper = new ExcelHelper();
+                if (excelHelper.ValidateProvidedFile(providedFilePath))
+                {
+
+                    oldcatalogFile = excelHelper.CreateFileFromProvidedFilePath(providedFilePath);
+                    AnsiConsole.MarkupLine("File existence validation [bold green1]PASSED[/]");
+                    break;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("File existence validation [bold red]FAILED[/] \n" +
+                                           "- Ensure that the file exists in the path and ends with .xlsx ");
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("Unhandled Exception");
+            }
+
+        }
+
+        AnsiConsole.MarkupLine(
+            "[dim slowblink]Now importing the Old NDIS Support Catalogue...[/]");
+
+
+        oldNdisSupportCatalogue = _ndisSupportCatalogueHandler.ImportNdiSupportCatalogue(oldcatalogFile);
+        AnsiConsole.MarkupLine(
+            "Old NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]");
+
+        AnsiConsole.WriteLine("\nAnalysing Pricelist......");
+
+        // Process to for pricelist
+        _pricelistAnalysisHandler.CompletePricelistAnalysis(oldNdisSupportCatalogue,
+            ndisSupportCatalogue, catalogFile, oldcatalogFile);
+        
+        
+        
+        AnsiConsole.WriteLine("\n Do you wish to preview or export these reports to an excel file?");
+        var menuChoices = GetMenuChoices<PricelistAnalysisMenuOptions>();
+        foreach (var menuChoice in menuChoices)
+        {
+            AnsiConsole.WriteLine($"[{menuChoice.Key}] {menuChoice.Value}");
+        }
+        
+        var selectedIndex = AnsiConsole.Prompt(new SelectionPrompt<int>()
+            .Title("\nWhat would you like to do?")
+            .PageSize(menuChoices.Count)
+            .AddChoices(menuChoices.Keys));
+        
+        var selectedEnum = (PricelistAnalysisMenuOptions)selectedIndex;
+        switch (selectedEnum)
+        {
+            case PricelistAnalysisMenuOptions.PreviewChanges:
+                _pricelistAnalysisHandler.RenderDetailedPricelistAnalysis(oldNdisSupportCatalogue,
+                    ndisSupportCatalogue, catalogFile, oldcatalogFile);
+                break;
+            case PricelistAnalysisMenuOptions.ExportToCSV:
+                _pricelistAnalysisHandler.RenderDetailedPricelistAnalysis(oldNdisSupportCatalogue,
+                    ndisSupportCatalogue, catalogFile, oldcatalogFile);
+                break;
+            case PricelistAnalysisMenuOptions.ReturnMainMenu:
+                DisplayMainMenu(ndisSupportCatalogue, catalogFile);
+                break;
+            default:
+                DisplayMainMenu(ndisSupportCatalogue, catalogFile);
+                break;
+        }
+
+        
+    }
 }
