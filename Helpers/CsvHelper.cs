@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using CsvHelper;
 using PricelistGenerator.Interfaces.Helpers;
+using PricelistGenerator.Models.ExportAnalysisChanges;
 using PricelistGenerator.Models.Menu;
 
 namespace PricelistGenerator.Helpers;
@@ -127,5 +128,4 @@ public class CsvHelper: ICsvHelper
             return error;
         }
     }
-    
 }

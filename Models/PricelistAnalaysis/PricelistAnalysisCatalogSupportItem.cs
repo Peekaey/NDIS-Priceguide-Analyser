@@ -10,7 +10,6 @@ public class PricelistAnalysisCatalogSupportItem
     
     public PricelistAnalysisPriceControlChanges PriceControlChanges{ get; set; }
     
-    
     public bool NameChanged { get; set; }
 
     public bool RegistrationGroupNameChange { get; set; }
@@ -26,7 +25,6 @@ public class PricelistAnalysisCatalogSupportItem
     public bool ProdaSupportCategoryNameChange { get; set; }
     public bool PaceSupportCategoryNameChange { get; set; }
     
-    
     public PriceChangeStatus ActPriceChange { get; set; }
     public PriceChangeStatus NswPriceChange { get; set; }
     public PriceChangeStatus VicPriceChange { get; set; }
@@ -38,21 +36,46 @@ public class PricelistAnalysisCatalogSupportItem
     public PriceChangeStatus RemotePriceChange { get; set; } 
     public PriceChangeStatus VeryRemotePriceChange { get; set; }
     
-    public bool ActPriceControlChanged { get; set; }
-    public bool NswPriceControlChanged { get; set; }
-    public bool VicPriceControlChanged { get; set; }
-    public bool QldPriceControlChanged { get; set; }
-    public bool SaPriceControlChanged { get; set; }
-    public bool TasPriceControlChanged { get; set; }
-    public bool WaPriceControlChanged { get; set; }
-    public bool NtPriceControlChanged { get; set; }
-    public bool RemotePriceControlChanged { get; set; }
-    public bool VeryRemotePriceControlChanged { get; set; }
-
     public enum PriceChangeStatus
     {
         Unchanged,
         Increased,
         Decreased
+    }
+
+    public string GetSupportPurpose(string supportItem)
+    {
+        var identifier = supportItem.Substring(supportItem.Length - 1);
+        // Uses the generic identifier to identify the support Purpose if the support item does not end with _T
+        if (!supportItem.Contains("T"))
+            switch (identifier)
+            {
+                case "1":
+                    return "Core";
+                case "2":
+                    return "Capital";
+                case "3":
+                    return "Capacity Building";
+                default:
+                    return "Unmapped Support Purpose";
+            }
+        else
+        {
+            // Mapping for support items that end with _T or _D > Changes to third last character
+            identifier = supportItem.Substring(supportItem.Length - 3);
+            switch (identifier)
+            {
+                case "1_T":
+                    return "Core";
+                case "1_D":
+                    return "Core";
+                // Represents Identifier 1_T_D
+                case "T_D":
+                    return "Core";
+                    break;               default:
+                    return "Unmapped Support Purpose";
+
+            }
+        }
     }
 }

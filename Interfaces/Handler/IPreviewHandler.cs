@@ -7,4 +7,5 @@ public interface IPreviewHandler
     public void RenderProdaPricelist(int menuChoice, NdisSupportCatalogue ndisSupportCatalogue);
     public void RenderPacePricelist(int menuChoice, NdisSupportCatalogue ndisSupportCatalogue);
     public void RenderCompletePricelistAnalysis(PricelistAnalysisCatalog pricelistAnalysisCatalog);
+    public void RenderDetailedPricelistAnalysis(PricelistAnalysisCatalog pricelistAnalysisCatalog);
 }

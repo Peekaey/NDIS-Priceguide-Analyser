@@ -1,4 +1,5 @@
 using PricelistGenerator.Models;
+using PricelistGenerator.Models.ExportAnalysisChanges;
 using PricelistGenerator.Models.File;
 using PricelistGenerator.Models.Menu;
 

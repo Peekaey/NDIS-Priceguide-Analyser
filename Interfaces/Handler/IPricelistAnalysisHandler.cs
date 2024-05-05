@@ -14,4 +14,7 @@ public interface IPricelistAnalysisHandler
     
     public void RenderDetailedPricelistAnalysis(NdisSupportCatalogue oldNdisSupportCatalogue,
         NdisSupportCatalogue newNdisSupportCatalogue, SpreadsheetFile spreadsheetFile, SpreadsheetFile oldSpreadsheetFile);
+    
+    public void ExportChangesToCSV(NdisSupportCatalogue oldNdisSupportCatalogue,
+        NdisSupportCatalogue newNdisSupportCatalogue, SpreadsheetFile spreadsheetFile, SpreadsheetFile oldSpreadsheetFile);
 }

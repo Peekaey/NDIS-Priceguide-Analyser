@@ -1,14 +1,13 @@
+using System.Globalization;
+using DocumentFormat.OpenXml.Math;
 using PricelistGenerator.Interfaces;
 using PricelistGenerator.Models;
+using PricelistGenerator.Models.ExportAnalysisChanges;
 
 namespace PricelistGenerator.Service;
 
 public class PricelistAnalysisService : IPricelistAnalysisService
 {
-    //TODO Also check for Unit Changes,PriceLimit Changes
-    // Could also potentially include registration group name/number
-    // Check for Support Purchase Change by getting last character of external ID
-    // Maybe also calculate percentage increases
     public PricelistAnalysisCatalog PopulateNDISSupportCatalogue(NdisSupportCatalogue oldNdisSupportCatalog,
         NdisSupportCatalogue newNdisSupportCatalogue,
         PricelistAnalysisCatalog pricelistAnalysisCatalogue)
@@ -38,6 +37,9 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         pricelistAnalysisCatalogue = GetRegistrationGroupNumberChange(pricelistAnalysisCatalogue);
         pricelistAnalysisCatalogue = GetSupportPurposeChange(pricelistAnalysisCatalogue);
 
+        pricelistAnalysisCatalogue = CalculatePriceIncreasePercentage(pricelistAnalysisCatalogue);
+        pricelistAnalysisCatalogue = CalculatePriceDecreasePercentage(pricelistAnalysisCatalogue);
+        
         return pricelistAnalysisCatalogue;
     }
 
@@ -50,8 +52,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         // Keeping Logic Mapping Logic Separate
         foreach (var supportItem in oldNdisSupportCatalog.NdisSupportCatalogueSupportItems)
         {
-            var
-                pricelistAnalysisSupportItem = new PricelistAnalysisCatalogSupportItem();
+            var pricelistAnalysisSupportItem = new PricelistAnalysisCatalogSupportItem();
 
             pricelistAnalysisSupportItem.SupportItemNumber = supportItem.SupportItemNumber;
             pricelistAnalysisSupportItem.oldSupportItem = supportItem;
@@ -114,13 +115,20 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         NdisSupportCatalogue newNdisSupportCatalogue)
     {
         pricelistAnalysisCatalog.DuplicateItemsAdded = new List<NdisSupportCatalogueSupportItem>();
-
-        var duplicateItemHashSet = new HashSet<NdisSupportCatalogueSupportItem>();
+     
+        var seenItems = new Dictionary<string, NdisSupportCatalogueSupportItem>();
 
         foreach (var newSupportItem in newNdisSupportCatalogue.NdisSupportCatalogueSupportItems)
-            if (!duplicateItemHashSet.Add(newSupportItem))
+        {
+            if (seenItems.ContainsKey(newSupportItem.SupportItemNumber))
+            {
                 pricelistAnalysisCatalog.DuplicateItemsAdded.Add(newSupportItem);
-
+            }
+            else
+            {
+                seenItems.Add(newSupportItem.SupportItemNumber, newSupportItem);
+            }
+        }
 
         return pricelistAnalysisCatalog;
     }
@@ -180,244 +188,284 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         return pricelistAnalysisCatalog;
     }
 
-    // private PricelistAnalysisCatalog GetPriceLimitChange(PricelistAnalysisCatalog pricelistAnalysisCatalog)
-    // {
-    //     foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
-    //     {
-    //         if (supportItem.oldSupportItem.)
-    //     }
-    // }
-
     private PricelistAnalysisCatalog GetPriceChanges(PricelistAnalysisCatalog pricelistAnalysisCatalog)
     {
-        pricelistAnalysisCatalog.SupportItemsWithPriceChanges =
+        pricelistAnalysisCatalog.SupportItemsWithPriceIncrease =
             new List<PricelistAnalysisSupportItemsWithPriceChanges>();
+
+        pricelistAnalysisCatalog.SupportItemsWithPriceDecrease =
+            new List<PricelistAnalysisSupportItemsWithPriceChanges>();
+        
         foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
             var pricelistAnalysisSupportItemsWithPriceChanges
                 = new PricelistAnalysisSupportItemsWithPriceChanges();
 
             var priceChange = false;
-            // Stores individual values for easier manipulation/reading as well as to handle edge cases with
-            // Prices for different regions increasing/decreasing
+            var priceIncrease = false;
+            var priceDecrease = false;
+            // Prices across regions only increase or decrease as a group, never individually
             pricelistAnalysisSupportItemsWithPriceChanges.SupportItemNumber = supportItem.SupportItemNumber;
-            if (supportItem.oldSupportItem.ActPrice != supportItem.newSupportItem.ActPrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.ActPrice)&& !string.IsNullOrEmpty(supportItem.newSupportItem.ActPrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.ActPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.ActPrice)) {
-                    supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
-                }
-                else {
-                    supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
-                }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
-            }
-
-            pricelistAnalysisSupportItemsWithPriceChanges.NewActPrice = supportItem.newSupportItem.ActPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldActPrice = supportItem.oldSupportItem.ActPrice;
-
-            if (supportItem.oldSupportItem.NswPrice != supportItem.newSupportItem.NswPrice)
-            {
-                if (decimal.Parse(supportItem.newSupportItem.NswPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.NswPrice))
+                if (supportItem.oldSupportItem.ActPrice != supportItem.newSupportItem.ActPrice)
                 {
-                    supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.ActPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.ActPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewActPrice = supportItem.newSupportItem.ActPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldActPrice = supportItem.oldSupportItem.ActPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.ActPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewNswPrice = supportItem.newSupportItem.NswPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldNswPrice = supportItem.oldSupportItem.NswPrice;
-
-            if (supportItem.oldSupportItem.VicPrice != supportItem.newSupportItem.VicPrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.NswPrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.NswPrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.VicPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.VicPrice))
+                if (supportItem.oldSupportItem.NswPrice != supportItem.newSupportItem.NswPrice)
                 {
-                    supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.NswPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.NswPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewNswPrice = supportItem.newSupportItem.NswPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldNswPrice = supportItem.oldSupportItem.NswPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.NswPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewVicPrice = supportItem.newSupportItem.VicPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldVicPrice = supportItem.oldSupportItem.VicPrice;
-
-            if (supportItem.oldSupportItem.QldPrice != supportItem.newSupportItem.QldPrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.VicPrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.VicPrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.QldPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.QldPrice))
+                if (supportItem.oldSupportItem.VicPrice != supportItem.newSupportItem.VicPrice)
                 {
-                    supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.VicPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.VicPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewVicPrice = supportItem.newSupportItem.VicPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldVicPrice = supportItem.oldSupportItem.VicPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.VicPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
             }
-            else
-            {
-                supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
-            }
-
-            pricelistAnalysisSupportItemsWithPriceChanges.NewQldPrice = supportItem.newSupportItem.QldPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldQldPrice = supportItem.oldSupportItem.QldPrice;
-
-            if (supportItem.oldSupportItem.SaPrice != supportItem.newSupportItem.SaPrice)
-            {
-                if (decimal.Parse(supportItem.newSupportItem.SaPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.SaPrice))
+            
+            if(!string.IsNullOrEmpty(supportItem.oldSupportItem.QldPrice) && !string.IsNullOrEmpty(supportItem.newSupportItem.QldPrice)) {
+                if (supportItem.oldSupportItem.QldPrice != supportItem.newSupportItem.QldPrice)
                 {
-                    supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.QldPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.QldPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewQldPrice = supportItem.newSupportItem.QldPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldQldPrice = supportItem.oldSupportItem.QldPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.QldPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewSaPrice = supportItem.newSupportItem.SaPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldSaPrice = supportItem.oldSupportItem.SaPrice;
-
-            if (supportItem.oldSupportItem.TasPrice != supportItem.newSupportItem.TasPrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.SaPrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.SaPrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.TasPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.TasPrice))
+                if (supportItem.oldSupportItem.SaPrice != supportItem.newSupportItem.SaPrice)
                 {
-                    supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.SaPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.SaPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewSaPrice = supportItem.newSupportItem.SaPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldSaPrice = supportItem.oldSupportItem.SaPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.SaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewTasPrice = supportItem.newSupportItem.TasPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldTasPrice = supportItem.oldSupportItem.TasPrice;
-
-            if (supportItem.oldSupportItem.WaPrice != supportItem.newSupportItem.WaPrice)
-            {
-                if (decimal.Parse(supportItem.newSupportItem.WaPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.WaPrice))
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.TasPrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.TasPrice)) {
+                if (supportItem.oldSupportItem.TasPrice != supportItem.newSupportItem.TasPrice)
                 {
-                    supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.TasPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.TasPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewTasPrice = supportItem.newSupportItem.TasPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldTasPrice = supportItem.oldSupportItem.TasPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.TasPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewWaPrice = supportItem.newSupportItem.WaPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldWaPrice = supportItem.oldSupportItem.WaPrice;
-
-            if (supportItem.oldSupportItem.NtPrice != supportItem.newSupportItem.NtPrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.WaPrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.WaPrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.NtPrice) >
-                    decimal.Parse(supportItem.oldSupportItem.NtPrice))
+                if (supportItem.oldSupportItem.WaPrice != supportItem.newSupportItem.WaPrice)
                 {
-                    supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.WaPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.WaPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewWaPrice = supportItem.newSupportItem.WaPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldWaPrice = supportItem.oldSupportItem.WaPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.WaPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewNtPrice = supportItem.newSupportItem.NtPrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldNtPrice = supportItem.oldSupportItem.NtPrice;
-
-            if (supportItem.oldSupportItem.RemotePrice != supportItem.newSupportItem.RemotePrice)
-            {
-                if (decimal.Parse(supportItem.newSupportItem.RemotePrice) >
-                    decimal.Parse(supportItem.oldSupportItem.RemotePrice))
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.NtPrice) && !string.IsNullOrEmpty(supportItem.newSupportItem.NtPrice)) {
+                if (supportItem.oldSupportItem.NtPrice != supportItem.newSupportItem.NtPrice)
                 {
-                    supportItem.RemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.NtPrice) >
+                        decimal.Parse(supportItem.oldSupportItem.NtPrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewNtPrice = supportItem.newSupportItem.NtPrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldNtPrice = supportItem.oldSupportItem.NtPrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.RemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.NtPriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
-            }
-            else
-            {
-                supportItem.VeryRemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
             }
 
-            pricelistAnalysisSupportItemsWithPriceChanges.NewRemotePrice = supportItem.newSupportItem.RemotePrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldRemotePrice = supportItem.oldSupportItem.RemotePrice;
-
-            if (supportItem.oldSupportItem.VeryRemotePrice != supportItem.newSupportItem.VeryRemotePrice)
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.RemotePrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.RemotePrice))
             {
-                if (decimal.Parse(supportItem.newSupportItem.VeryRemotePrice) >
-                    decimal.Parse(supportItem.oldSupportItem.VeryRemotePrice))
+                if (supportItem.oldSupportItem.RemotePrice != supportItem.newSupportItem.RemotePrice)
                 {
-                    supportItem.VeryRemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    if (decimal.Parse(supportItem.newSupportItem.RemotePrice) >
+                        decimal.Parse(supportItem.oldSupportItem.RemotePrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.RemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.RemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewRemotePrice = supportItem.newSupportItem.RemotePrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldRemotePrice = supportItem.oldSupportItem.RemotePrice;
+                    priceChange = true;
                 }
                 else
                 {
-                    supportItem.VeryRemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    supportItem.RemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
                 }
-                priceChange = true;
             }
-            else
+            
+            if (!string.IsNullOrEmpty(supportItem.oldSupportItem.VeryRemotePrice) &&
+                !string.IsNullOrEmpty(supportItem.newSupportItem.VeryRemotePrice))
             {
-                supportItem.VeryRemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
+                if (supportItem.oldSupportItem.VeryRemotePrice != supportItem.newSupportItem.VeryRemotePrice)
+                {
+                    if (decimal.Parse(supportItem.newSupportItem.VeryRemotePrice) >
+                        decimal.Parse(supportItem.oldSupportItem.VeryRemotePrice))
+                    {
+                        priceIncrease = true;
+                        supportItem.VeryRemotePriceChange =
+                            PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Increased;
+                    }
+                    else
+                    {
+                        supportItem.VeryRemotePriceChange =
+                            PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Decreased;
+                    }
+                    pricelistAnalysisSupportItemsWithPriceChanges.NewVeryRemotePrice =
+                        supportItem.newSupportItem.VeryRemotePrice;
+                    pricelistAnalysisSupportItemsWithPriceChanges.OldVeryRemotePrice =
+                        supportItem.oldSupportItem.VeryRemotePrice;
+                    priceChange = true;
+                }
+                else
+                {
+                    supportItem.VeryRemotePriceChange = PricelistAnalysisCatalogSupportItem.PriceChangeStatus.Unchanged;
+                }
             }
-
-            pricelistAnalysisSupportItemsWithPriceChanges.NewVeryRemotePrice =
-                supportItem.newSupportItem.VeryRemotePrice;
-            pricelistAnalysisSupportItemsWithPriceChanges.OldVeryRemotePrice =
-                supportItem.oldSupportItem.VeryRemotePrice;
-
+            
             if (priceChange == true)
             {
-                pricelistAnalysisCatalog.SupportItemsWithPriceChanges.Add(pricelistAnalysisSupportItemsWithPriceChanges);
+                if (priceIncrease)
+                {
+                    pricelistAnalysisCatalog.SupportItemsWithPriceIncrease.Add(pricelistAnalysisSupportItemsWithPriceChanges);
+                }
+                else
+                {
+                    pricelistAnalysisCatalog.SupportItemsWithPriceDecrease.Add(pricelistAnalysisSupportItemsWithPriceChanges);
+                }
             }
-
         }
-
         return pricelistAnalysisCatalog;
     }
 
@@ -431,9 +479,11 @@ public class PricelistAnalysisService : IPricelistAnalysisService
 
     private PricelistAnalysisCatalog GetPriceControlChanges(PricelistAnalysisCatalog pricelistAnalysisCatalog)
     {
+        pricelistAnalysisCatalog.SupportItemsWithPriceControlChanges =
+            new List<PricelistAnalysisPriceControlChanges>();
         foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
-            // Needs to be refactored
+            var priceChange = false;
             var oldActPriceControl = GetPriceControl(supportItem.oldSupportItem.ActPrice);
             var oldNswPriceControl = GetPriceControl(supportItem.oldSupportItem.NswPrice);
             var oldVicPriceControl = GetPriceControl(supportItem.oldSupportItem.VicPrice);
@@ -457,41 +507,84 @@ public class PricelistAnalysisService : IPricelistAnalysisService
             var newVeryRemotePriceControl = GetPriceControl(supportItem.newSupportItem.VeryRemotePrice);
 
 
-            if (oldActPriceControl != newActPriceControl) supportItem.ActPriceControlChanged = true;
-            if (oldNswPriceControl != newNswPriceControl) supportItem.NswPriceControlChanged = true;
-            if (oldVicPriceControl != newVicPriceControl) supportItem.VicPriceControlChanged = true;
-            if (oldQldPriceControl != newQldPriceControl) supportItem.QldPriceControlChanged = true;
-            if (oldSaPriceControl != newSaPriceControl) supportItem.SaPriceControlChanged = true;
-            if (oldTasPriceControl != newTasPriceControl) supportItem.TasPriceControlChanged = true;
-            if (oldWaPriceControl != newWaPriceControl) supportItem.WaPriceControlChanged = true;
-            if (oldNtPriceControl != newNtPriceControl) supportItem.NtPriceControlChanged = true;
-            if (oldRemotePriceControl != newRemotePriceControl) supportItem.RemotePriceControlChanged = true;
+            if (oldActPriceControl != newActPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldNswPriceControl != newNswPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldVicPriceControl != newVicPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldQldPriceControl != newQldPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldSaPriceControl != newSaPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldTasPriceControl != newTasPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldWaPriceControl != newWaPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldNtPriceControl != newNtPriceControl)
+            {
+                priceChange = true;
+            }
+
+            if (oldRemotePriceControl != newRemotePriceControl)
+            {
+                priceChange = true;
+            }
+
             if (oldVeryRemotePriceControl != newVeryRemotePriceControl)
-                supportItem.VeryRemotePriceControlChanged = true;
+            {
+                priceChange = true;
+            }
 
-            var pricelistAnalysisPriceControlChanges = new PricelistAnalysisPriceControlChanges();
-            pricelistAnalysisPriceControlChanges.ActOldPriceControl = oldActPriceControl;
-            pricelistAnalysisPriceControlChanges.ActNewPriceControl = newActPriceControl;
-            pricelistAnalysisPriceControlChanges.NswOldPriceControl = oldNswPriceControl;
-            pricelistAnalysisPriceControlChanges.NswNewPriceControl = newNswPriceControl;
-            pricelistAnalysisPriceControlChanges.VicOldPriceControl = oldVicPriceControl;
-            pricelistAnalysisPriceControlChanges.VicNewPriceControl = newVicPriceControl;
-            pricelistAnalysisPriceControlChanges.QldOldPriceControl = oldQldPriceControl;
-            pricelistAnalysisPriceControlChanges.QldNewPriceControl = newQldPriceControl;
-            pricelistAnalysisPriceControlChanges.SaOldPriceControl = oldSaPriceControl;
-            pricelistAnalysisPriceControlChanges.SaNewPriceControl = newSaPriceControl;
-            pricelistAnalysisPriceControlChanges.TasOldPriceControl = oldTasPriceControl;
-            pricelistAnalysisPriceControlChanges.TasNewPriceControl = newTasPriceControl;
-            pricelistAnalysisPriceControlChanges.WaOldPriceControl = oldWaPriceControl;
-            pricelistAnalysisPriceControlChanges.WaNewPriceControl = newWaPriceControl;
-            pricelistAnalysisPriceControlChanges.NtOldPriceControl = oldNtPriceControl;
-            pricelistAnalysisPriceControlChanges.NtNewPriceControl = newNtPriceControl;
-            pricelistAnalysisPriceControlChanges.RemoteOldPriceControl = oldRemotePriceControl;
-            pricelistAnalysisPriceControlChanges.RemoteNewPriceControl = newRemotePriceControl;
-            pricelistAnalysisPriceControlChanges.VeryRemoteOldPriceControl = oldVeryRemotePriceControl;
-            pricelistAnalysisPriceControlChanges.VeryRemoteNewPriceControl = newVeryRemotePriceControl;
+            if (priceChange == true)
+            {
+                PricelistAnalysisPriceControlChanges pricelistAnalysisPriceControlChanges =
+                    new PricelistAnalysisPriceControlChanges();
+                pricelistAnalysisPriceControlChanges.SupportItemNumber = supportItem.SupportItemNumber;
+                pricelistAnalysisPriceControlChanges.ActOldPriceControl = oldActPriceControl;
+                pricelistAnalysisPriceControlChanges.ActNewPriceControl = newActPriceControl;
+                pricelistAnalysisPriceControlChanges.NswOldPriceControl = oldNswPriceControl;
+                pricelistAnalysisPriceControlChanges.NswNewPriceControl = newNswPriceControl;
+                pricelistAnalysisPriceControlChanges.VicOldPriceControl = oldVicPriceControl;
+                pricelistAnalysisPriceControlChanges.VicNewPriceControl = newVicPriceControl;
+                pricelistAnalysisPriceControlChanges.QldOldPriceControl = oldQldPriceControl;
+                pricelistAnalysisPriceControlChanges.QldNewPriceControl = newQldPriceControl;
+                pricelistAnalysisPriceControlChanges.SaOldPriceControl = oldSaPriceControl;
+                pricelistAnalysisPriceControlChanges.SaNewPriceControl = newSaPriceControl;
+                pricelistAnalysisPriceControlChanges.TasOldPriceControl = oldTasPriceControl;
+                pricelistAnalysisPriceControlChanges.TasNewPriceControl = newTasPriceControl;
+                pricelistAnalysisPriceControlChanges.WaOldPriceControl = oldWaPriceControl;
+                pricelistAnalysisPriceControlChanges.WaNewPriceControl = newWaPriceControl;
+                pricelistAnalysisPriceControlChanges.NtOldPriceControl = oldNtPriceControl;
+                pricelistAnalysisPriceControlChanges.NtNewPriceControl = newNtPriceControl;
+                pricelistAnalysisPriceControlChanges.RemoteOldPriceControl = oldRemotePriceControl;
+                pricelistAnalysisPriceControlChanges.RemoteNewPriceControl = newRemotePriceControl;
+                pricelistAnalysisPriceControlChanges.VeryRemoteOldPriceControl = oldVeryRemotePriceControl;
+                pricelistAnalysisPriceControlChanges.VeryRemoteNewPriceControl = newVeryRemotePriceControl;
+                pricelistAnalysisCatalog.SupportItemsWithPriceControlChanges.Add(pricelistAnalysisPriceControlChanges);
+            }
         }
-
         return pricelistAnalysisCatalog;
     }
 
@@ -530,12 +623,14 @@ public class PricelistAnalysisService : IPricelistAnalysisService
 
     private string GetPriceControl(string? price)
     {
-        if (price == null || price == "1") return "No Price";
+        if (string.IsNullOrEmpty(price) || price == "1.00")
         {
             return "Recommended";
         }
-
-        return "Maximum";
+        else
+        {
+            return "Maximum";
+        }
     }
 
     private string GetSupportPurpose(string supportItem)
@@ -573,5 +668,251 @@ public class PricelistAnalysisService : IPricelistAnalysisService
                 return "Unmapped Support Purpose";
                 break;
         }
+    }
+
+    private PricelistAnalysisCatalog CalculatePriceIncreasePercentage(PricelistAnalysisCatalog pricelistAnalysisCatalog)
+    {
+        foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceIncrease)
+        {
+            var actPercentage =
+                pricelistAnalysisCatalog.CalculatePriceIncreasePercentage(decimal.Parse(item.OldActPrice),
+                    decimal.Parse(item.NewActPrice));
+            item.ActPercentage = actPercentage.ToString(CultureInfo.CurrentCulture);
+
+            var ntPercentage = pricelistAnalysisCatalog.CalculatePriceIncreasePercentage(
+                decimal.Parse(item.OldNtPrice),
+                decimal.Parse(item.NewNtPrice));
+            item.NtPercentage = ntPercentage.ToString(CultureInfo.CurrentCulture);
+
+            var remotePercentage = pricelistAnalysisCatalog.CalculatePriceIncreasePercentage(
+                decimal.Parse(item.OldRemotePrice),
+                decimal.Parse(item.NewRemotePrice));
+            item.RemotePercentage = remotePercentage.ToString(CultureInfo.CurrentCulture);
+            
+            var veryRemotePercentage = pricelistAnalysisCatalog.CalculatePriceIncreasePercentage(
+                decimal.Parse(item.OldVeryRemotePrice),
+                decimal.Parse(item.NewVeryRemotePrice));
+            item.VeryRemotePercentage = veryRemotePercentage.ToString(CultureInfo.CurrentCulture);
+        }
+
+        return pricelistAnalysisCatalog;
+    }
+    
+    private PricelistAnalysisCatalog CalculatePriceDecreasePercentage(PricelistAnalysisCatalog pricelistAnalysisCatalog)
+    {
+        foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceDecrease)
+        {
+            var actPercentage =
+                pricelistAnalysisCatalog.CalculatePriceDecreasePercentage(decimal.Parse(item.OldActPrice),
+                    decimal.Parse(item.NewActPrice));
+            item.ActPercentage = actPercentage.ToString(CultureInfo.CurrentCulture);
+
+            var ntPercentage = pricelistAnalysisCatalog.CalculatePriceDecreasePercentage(
+                decimal.Parse(item.OldNtPrice),
+                decimal.Parse(item.NewNtPrice));
+            item.NtPercentage = ntPercentage.ToString(CultureInfo.CurrentCulture);
+
+            var remotePercentage = pricelistAnalysisCatalog.CalculatePriceDecreasePercentage(
+                decimal.Parse(item.OldRemotePrice),
+                decimal.Parse(item.NewRemotePrice));
+            item.RemotePercentage = remotePercentage.ToString(CultureInfo.CurrentCulture);
+            
+            var veryRemotePercentage = pricelistAnalysisCatalog.CalculatePriceDecreasePercentage(
+                decimal.Parse(item.OldVeryRemotePrice),
+                decimal.Parse(item.NewVeryRemotePrice));
+            item.VeryRemotePercentage = veryRemotePercentage.ToString(CultureInfo.CurrentCulture);
+        }
+
+        return pricelistAnalysisCatalog;
+    }
+
+    public ExportAnalysisChanges MapPricelistAnalysisCatalogToExportAnalysis(PricelistAnalysisCatalog analysisCatalog)
+    {
+        ExportAnalysisChanges exportAnalysisChanges = new ExportAnalysisChanges();
+        
+        exportAnalysisChanges.ItemsAdded = new List<BaseItem>();
+        foreach (var itemAdded in analysisCatalog.SupportItemsAdded)
+        {
+            BaseItem baseItem = new BaseItem();
+            baseItem.SupportItemNumber = itemAdded.SupportItemNumber;
+            baseItem.NewSupportItemName = itemAdded.SupportItemName;
+            exportAnalysisChanges.ItemsAdded.Add(baseItem);
+        }
+
+        exportAnalysisChanges.ItemsRemoved = new List<BaseItem>();
+        foreach (var itemRemoved in analysisCatalog.SupportItemsRemoved)
+        {
+            BaseItem baseItem = new BaseItem();
+            baseItem.SupportItemNumber = itemRemoved.SupportItemNumber;
+            baseItem.NewSupportItemName = itemRemoved.SupportItemName;
+            exportAnalysisChanges.ItemsRemoved.Add(baseItem);
+        }
+        
+        exportAnalysisChanges.DuplicateItems= new List<BaseItem>();
+        foreach (var duplicateItem in analysisCatalog.DuplicateItemsAdded)
+        {
+            BaseItem baseItem = new BaseItem();
+            baseItem.SupportItemNumber = duplicateItem.SupportItemNumber;
+            baseItem.NewSupportItemName = duplicateItem.SupportItemName;
+            exportAnalysisChanges.DuplicateItems.Add(baseItem);
+        }
+        
+        exportAnalysisChanges.PriceIncreases = new List<PriceChange>();
+        foreach (var item in analysisCatalog.SupportItemsWithPriceIncrease)
+        {
+            PriceChange priceChange = new PriceChange();
+            priceChange.SupportItemNumber = item.SupportItemNumber;
+            priceChange.ActPriceChangePercentage = item.ActPercentage;
+            priceChange.NtPriceChangePercentage = item.NtPercentage;
+            priceChange.RemotePriceChangePercentage = item.RemotePercentage;
+            priceChange.VeryRemotePriceChangePercentage = item.VeryRemotePercentage;
+            exportAnalysisChanges.PriceIncreases.Add(priceChange);
+        }
+        
+        exportAnalysisChanges.PriceDecreases = new List<PriceChange>();
+        foreach (var item in analysisCatalog.SupportItemsWithPriceDecrease)
+        {
+            PriceChange priceChange = new PriceChange();
+            priceChange.SupportItemNumber = item.SupportItemNumber;
+            priceChange.ActPriceChangePercentage = item.ActPercentage;
+            priceChange.NtPriceChangePercentage = item.NtPercentage;
+            priceChange.RemotePriceChangePercentage = item.RemotePercentage;
+            priceChange.VeryRemotePriceChangePercentage = item.VeryRemotePercentage;
+            exportAnalysisChanges.PriceDecreases.Add(priceChange);
+        }
+        
+        exportAnalysisChanges.NameChanges = new List<ItemNameChange>();
+        foreach(var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.NameChanged)
+            {
+                ItemNameChange itemNameChange = new ItemNameChange();
+                itemNameChange.SupportItemNumber = item.SupportItemNumber;
+                itemNameChange.NewSupportItemName = item.newSupportItem.SupportItemName;
+                itemNameChange.OldSupportItemName = item.oldSupportItem.SupportItemName;
+                exportAnalysisChanges.NameChanges.Add(itemNameChange);
+            }
+        }
+        
+        exportAnalysisChanges.PriceLimitChanges = new List<PriceLimitChange>();
+        foreach (var item in analysisCatalog.SupportItemsWithPriceControlChanges)
+        {
+            PriceLimitChange priceLimitChange = new PriceLimitChange();
+            priceLimitChange.SupportItemNumber = item.SupportItemNumber;
+            priceLimitChange.NewPriceLimit = item.ActNewPriceControl;
+            priceLimitChange.OldPriceLimit = item.ActOldPriceControl;
+        }
+
+        exportAnalysisChanges.UnitChanges = new List<UnitOfMeasureChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.UnitChanged)
+            {
+                UnitOfMeasureChange unitOfMeasureChange = new UnitOfMeasureChange();
+                unitOfMeasureChange.SupportItemNumber = item.SupportItemNumber;
+                unitOfMeasureChange.NewUnitOfMeasure = item.newSupportItem.Unit;
+                unitOfMeasureChange.OldUnitOfMeasure = item.oldSupportItem.Unit;
+                exportAnalysisChanges.UnitChanges.Add(unitOfMeasureChange);
+            }
+        }
+        
+        exportAnalysisChanges.PaceSupportCategoryNameChanges = new List<SupportCategoryNameChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.PaceSupportCategoryNameChange)
+            {
+                SupportCategoryNameChange supportCategoryNameChange = new SupportCategoryNameChange();
+                supportCategoryNameChange.SupportItemNumber = item.SupportItemNumber;
+                supportCategoryNameChange.NewSupportCategoryName = item.newSupportItem.PaceSupportCategoryName;
+                supportCategoryNameChange.OldSupportCategoryName = item.oldSupportItem.PaceSupportCategoryName;
+                exportAnalysisChanges.PaceSupportCategoryNameChanges.Add(supportCategoryNameChange);
+            }
+        }
+        
+        exportAnalysisChanges.ProdaSupportCategoryNameChanges = new List<SupportCategoryNameChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.ProdaSupportCategoryNameChange)
+            {
+                SupportCategoryNameChange supportCategoryNameChange = new SupportCategoryNameChange();
+                supportCategoryNameChange.SupportItemNumber = item.SupportItemNumber;
+                supportCategoryNameChange.NewSupportCategoryName = item.newSupportItem.ProdaSupportCategoryName;
+                supportCategoryNameChange.OldSupportCategoryName = item.oldSupportItem.ProdaSupportCategoryName;
+                exportAnalysisChanges.ProdaSupportCategoryNameChanges.Add(supportCategoryNameChange);
+            }
+        }
+        
+        exportAnalysisChanges.PaceSupportCategoryNumberChanges = new List<SupportCategoryNumberChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.PaceSupportCategoryNumberChanged)
+            {
+                SupportCategoryNumberChange supportCategoryNumberChange = new SupportCategoryNumberChange();
+                supportCategoryNumberChange.SupportItemNumber = item.SupportItemNumber;
+                supportCategoryNumberChange.NewSupportCategoryNumber = item.newSupportItem.PaceSupportCategoryNumber;
+                supportCategoryNumberChange.OldSupportCategoryNumber = item.oldSupportItem.PaceSupportCategoryNumber;
+                exportAnalysisChanges.PaceSupportCategoryNumberChanges.Add(supportCategoryNumberChange);
+            }
+        }
+        
+        exportAnalysisChanges.ProdaSupportCategoryNumberChanges = new List<SupportCategoryNumberChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.ProdaSupportCategoryNumberChanged)
+            {
+                SupportCategoryNumberChange supportCategoryNumberChange = new SupportCategoryNumberChange();
+                supportCategoryNumberChange.SupportItemNumber = item.SupportItemNumber;
+                supportCategoryNumberChange.NewSupportCategoryNumber = item.newSupportItem.ProdaSupportCategoryNumber;
+                supportCategoryNumberChange.OldSupportCategoryNumber = item.oldSupportItem.ProdaSupportCategoryNumber;
+                exportAnalysisChanges.ProdaSupportCategoryNumberChanges.Add(supportCategoryNumberChange);
+            }
+        }
+        
+        exportAnalysisChanges.RegistrationGroupNameChanges = new List<RegistrationGroupNameChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.RegistrationGroupNameChange)
+            {
+                RegistrationGroupNameChange registrationGroupNameChange = new RegistrationGroupNameChange();
+                registrationGroupNameChange.SupportItemNumber = item.SupportItemNumber;
+                registrationGroupNameChange.NewRegistrationGroupName = item.newSupportItem.RegistrationGroupName;
+                registrationGroupNameChange.OldRegistrationGroupName = item.oldSupportItem.RegistrationGroupName;
+                exportAnalysisChanges.RegistrationGroupNameChanges.Add(registrationGroupNameChange);
+            }
+        }
+        
+        exportAnalysisChanges.RegistrationGroupNumberChanges = new List<RegistrationGroupNumberChange>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.RegistrationGroupNumberChange)
+            {
+                RegistrationGroupNumberChange registrationGroupNumberChange = new RegistrationGroupNumberChange();
+                registrationGroupNumberChange.SupportItemNumber = item.SupportItemNumber;
+                registrationGroupNumberChange.NewRegistrationGroupNumber = item.newSupportItem.RegistrationGroupNumber;
+                registrationGroupNumberChange.OldRegistrationGroupNumber = item.oldSupportItem.RegistrationGroupNumber;
+                exportAnalysisChanges.RegistrationGroupNumberChanges.Add(registrationGroupNumberChange);
+            }
+        }
+
+        exportAnalysisChanges.DifferentSupportCategoryNumberOrNames = new List<DifferentSupportCategoryNumberOrName>();
+        foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.newSupportItem.ProdaSupportCategoryName != item.oldSupportItem.ProdaSupportCategoryName ||
+                item.newSupportItem.ProdaSupportCategoryNumber != item.oldSupportItem.ProdaSupportCategoryNumber ||
+                item.newSupportItem.PaceSupportCategoryName != item.oldSupportItem.PaceSupportCategoryName ||
+                item.newSupportItem.PaceSupportCategoryNumber != item.oldSupportItem.PaceSupportCategoryNumber)
+            {
+                DifferentSupportCategoryNumberOrName differentSupportCategoryNumberOrName =
+                    new DifferentSupportCategoryNumberOrName();
+                differentSupportCategoryNumberOrName.SupportItemNumber = item.SupportItemNumber;
+                differentSupportCategoryNumberOrName.ProdaSupportCategoryName = item.newSupportItem.ProdaSupportCategoryName;
+                differentSupportCategoryNumberOrName.ProdaSupportCategoryNumber = item.newSupportItem.ProdaSupportCategoryNumber;
+                differentSupportCategoryNumberOrName.PaceSupportCategoryName = item.newSupportItem.PaceSupportCategoryName;
+                differentSupportCategoryNumberOrName.PaceSupportCategoryNumber = item.newSupportItem.PaceSupportCategoryNumber;
+                exportAnalysisChanges.DifferentSupportCategoryNumberOrNames.Add(differentSupportCategoryNumberOrName);
+            }
+        }
+        
+        return exportAnalysisChanges;
     }
 }

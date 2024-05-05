@@ -17,7 +17,12 @@ namespace PricelistGenerator
         private INDISSupportCatalogueHandler _ndisSupportCatalogueHandler;
         private IExcelHelper _excelHelper;
         
-
+        //TODO Finish Exporting
+        //TODO Refactor Code (Remove References to Support Purpose)
+        //TODO Fix Export Mapping for Price Control Changes
+        // TODO Fix Export Mapping for Different Support Categories
+        // TODO Fix Analysis Detailed PReview For Different SupportCategories
+        // Check Mapping for Registration Changes
         public Program(IMenuHandler menuHandler, INDISSupportCatalogueHandler ndisSupportCatalogueHandler, IExcelHelper excelHelper)
         {
             _menuHandler = menuHandler;
@@ -78,7 +83,7 @@ namespace PricelistGenerator
         }
     }
 
-    class MainProgram
+    abstract class MainProgram
     {
         static void Main(string[] args)
         {
@@ -93,10 +98,10 @@ namespace PricelistGenerator
 
             PricelistHandler pricelistHandler = new PricelistHandler(pricelistService, csvHelper, pricelistHelper);
             PreviewHandler previewHandler = new PreviewHandler(previewService, pricelistHandler, pricelistHelper);
-            PricelistAnalysisHandler pricelistAnalysisHandler = new PricelistAnalysisHandler(previewHandler, pricelistAnalysisService);
+            ExcelHelper excelHelper = new ExcelHelper();
+            PricelistAnalysisHandler pricelistAnalysisHandler = new PricelistAnalysisHandler(previewHandler, pricelistAnalysisService, excelHelper );
             NdisSupportCatalogueHandler ndisSupportCatalogueHandler = new NdisSupportCatalogueHandler(ndisSupportCatalogueService);
             MenuHandler menuHandler = new MenuHandler(pricelistHandler, previewHandler, pricelistAnalysisHandler, ndisSupportCatalogueHandler);
-            
             IMenuHandler _menuHandler = new MenuHandler(pricelistHandler, previewHandler, pricelistAnalysisHandler, ndisSupportCatalogueHandler);
             INDISSupportCatalogueHandler _ndisSupportCatalogueHandler = new NdisSupportCatalogueHandler(ndisSupportCatalogueService);
             IExcelHelper _excelHelper = new ExcelHelper();
