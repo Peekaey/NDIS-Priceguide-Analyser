@@ -363,6 +363,7 @@ public class PreviewService: IPreviewService
             }
             index++;
         }
+        tables.Add(differentSupportCategoryNumberOrNameTable);
         
         var registrationGroupNameChangeTable = new Table();
         registrationGroupNameChangeTable.AddColumn("Row");
@@ -400,6 +401,7 @@ public class PreviewService: IPreviewService
             }
             index++;
         }
+        tables.Add(registrationGroupNameChangeTable);
         
         
         List<string> tableNames = new List<string>
