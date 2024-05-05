@@ -17,12 +17,8 @@ namespace PricelistGenerator
         private INDISSupportCatalogueHandler _ndisSupportCatalogueHandler;
         private IExcelHelper _excelHelper;
         
-        //TODO Finish Exporting
         //TODO Refactor Code (Remove References to Support Purpose)
-        //TODO Fix Export Mapping for Price Control Changes
-        // TODO Fix Export Mapping for Different Support Categories
-        // TODO Fix Analysis Detailed PReview For Different SupportCategories
-        // Check Mapping for Registration Changes
+        //TODO Check Mapping for Registration Changes
         public Program(IMenuHandler menuHandler, INDISSupportCatalogueHandler ndisSupportCatalogueHandler, IExcelHelper excelHelper)
         {
             _menuHandler = menuHandler;

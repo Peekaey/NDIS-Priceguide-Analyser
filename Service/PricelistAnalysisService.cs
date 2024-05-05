@@ -801,6 +801,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
             priceLimitChange.SupportItemNumber = item.SupportItemNumber;
             priceLimitChange.NewPriceLimit = item.ActNewPriceControl;
             priceLimitChange.OldPriceLimit = item.ActOldPriceControl;
+            exportAnalysisChanges.PriceLimitChanges.Add(priceLimitChange);
         }
 
         exportAnalysisChanges.UnitChanges = new List<UnitOfMeasureChange>();
@@ -897,10 +898,8 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         exportAnalysisChanges.DifferentSupportCategoryNumberOrNames = new List<DifferentSupportCategoryNumberOrName>();
         foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
-            if (item.newSupportItem.ProdaSupportCategoryName != item.oldSupportItem.ProdaSupportCategoryName ||
-                item.newSupportItem.ProdaSupportCategoryNumber != item.oldSupportItem.ProdaSupportCategoryNumber ||
-                item.newSupportItem.PaceSupportCategoryName != item.oldSupportItem.PaceSupportCategoryName ||
-                item.newSupportItem.PaceSupportCategoryNumber != item.oldSupportItem.PaceSupportCategoryNumber)
+            if (item.newSupportItem.ProdaSupportCategoryName != item.newSupportItem.PaceSupportCategoryName ||
+                item.newSupportItem.ProdaSupportCategoryNumber != item.newSupportItem.PaceSupportCategoryNumber)
             {
                 DifferentSupportCategoryNumberOrName differentSupportCategoryNumberOrName =
                     new DifferentSupportCategoryNumberOrName();

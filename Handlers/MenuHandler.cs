@@ -300,6 +300,7 @@ public class MenuHandler : IMenuHandler
         switch (selectedEnum)
         {
             case PricelistAnalysisMenuOptions.PreviewChanges:
+                AnsiConsole.WriteLine("Rendering Detailed Preview....");
                 _pricelistAnalysisHandler.RenderDetailedPricelistAnalysis(oldNdisSupportCatalogue,
                     ndisSupportCatalogue, catalogFile, oldcatalogFile);
                 DisplayMainMenu(ndisSupportCatalogue, catalogFile);
