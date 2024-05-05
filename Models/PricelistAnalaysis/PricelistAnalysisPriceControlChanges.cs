@@ -2,6 +2,7 @@ namespace PricelistGenerator.Models;
 
 public class PricelistAnalysisPriceControlChanges
 {
+    public string SupportItemNumber { get; set; }
     public string ActOldPriceControl { get; set; }
     public string ActNewPriceControl { get; set; }
     public string NswOldPriceControl { get; set; }

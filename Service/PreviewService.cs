@@ -74,10 +74,7 @@ public class PreviewService: IPreviewService
     AnsiConsole.WriteLine($"- {pricelistAnalysisCatalog.GetDifferentSupportCategoryNumberCount()} Items with Different Support Category Number between Proda & Pace");
     AnsiConsole.WriteLine($"- {pricelistAnalysisCatalog.GetDifferentSupportCategoryNameCount()} Items with Different Support Category Name between Proda & Pace");
     AnsiConsole.WriteLine($"- {pricelistAnalysisCatalog.GetRegistrationGroupNameChangeCount()} Items with Registration Group Name Change");
-    AnsiConsole.WriteLine($"- {pricelistAnalysisCatalog.GetRegistrationGroupNumberChangeCount()} Items with Support Purpose Change");
-    
-    RenderPricelistAnalysisDetailed(pricelistAnalysisCatalog);
-    
+    AnsiConsole.WriteLine($"- {pricelistAnalysisCatalog.GetRegistrationGroupNumberChangeCount()} Items with Registration Group Number Changes");
     }
 
     public void RenderPricelistAnalysisDetailed(PricelistAnalysisCatalog pricelistAnalysisCatalog)
@@ -144,9 +141,9 @@ public class PreviewService: IPreviewService
         priceIncreaseTable.AddColumn("Remote Increase %");
         priceIncreaseTable.AddColumn("Very Remote%");
         index = 1;
-        if (pricelistAnalysisCatalog.SupportItemsWithPriceChanges.Count > 0)
+        if (pricelistAnalysisCatalog.SupportItemsWithPriceIncrease.Count > 0)
         {
-            foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceChanges)
+            foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceIncrease)
             {
                 var actPercentage =
                     pricelistAnalysisCatalog.CalculatePriceIncreasePercentage(decimal.Parse(item.OldActPrice),
@@ -183,9 +180,9 @@ public class PreviewService: IPreviewService
         priceDecreaseTable.AddColumn("Remote Decrease %");
         priceDecreaseTable.AddColumn("Very Remote%");
         index = 1;
-        if (pricelistAnalysisCatalog.SupportItemsWithPriceChanges.Count > 0)
+        if (pricelistAnalysisCatalog.SupportItemsWithPriceDecrease.Count > 0)
         {
-            foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceChanges)
+            foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceDecrease)
             {
                 var actDecrease = pricelistAnalysisCatalog.CalculatePriceDecreasePercentage(
                     decimal.Parse(item.OldActPrice),
@@ -221,15 +218,13 @@ public class PreviewService: IPreviewService
         priceLimitChangeTable.AddColumn("New Price Limit");
         priceLimitChangeTable.AddColumn("Old Price Limit");
         index = 1;
-        foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
+        foreach (var item in pricelistAnalysisCatalog.SupportItemsWithPriceControlChanges)
         {
-            if (item.ActPriceControlChanged)
-            {
                 priceLimitChangeTable.AddRow(index.ToString(),
                 item.SupportItemNumber,
-                item.PriceControlChanges.ActNewPriceControl,
-                item.PriceControlChanges.ActOldPriceControl);
-            }
+                item.ActNewPriceControl,
+                item.ActOldPriceControl);
+            
         }
         tables.Add(priceLimitChangeTable);
         
@@ -346,12 +341,87 @@ public class PreviewService: IPreviewService
         }
         tables.Add(paceSupportCategoryNumberChangeTable);
 
-        foreach (var table in tables)
+        var registrationGroupNameChangeTable = new Table();
+        registrationGroupNameChangeTable.AddColumn("Row");
+        registrationGroupNameChangeTable.AddColumn("Support Item Number (External Id)");
+        registrationGroupNameChangeTable.AddColumn("New Registration Group Name");
+        registrationGroupNameChangeTable.AddColumn("Old Registration Group Name");
+        index = 1;
+        foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
-            AnsiConsole.Write(table);
+            if (item.RegistrationGroupNameChange)
+            {
+                registrationGroupNameChangeTable.AddRow(index.ToString(),
+                item.SupportItemNumber,
+                item.newSupportItem.RegistrationGroupName,
+                item.oldSupportItem.RegistrationGroupName);
+            }
+            index++;
+        }
+        tables.Add(registrationGroupNameChangeTable);
+        //
+        // var supportPurposeChangeTable = new Table();
+        // supportPurposeChangeTable.AddColumn("Row");
+        // supportPurposeChangeTable.AddColumn("Support Item Number (External Id)");
+        // supportPurposeChangeTable.AddColumn("New Support Purpose");
+        // supportPurposeChangeTable.AddColumn("Old Support Purpose");
+        // index = 1;
+        // foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
+        // {
+        //     if (item.SupportPurposeChanged)
+        //     {
+        //         supportPurposeChangeTable.AddRow(index.ToString(),
+        //         item.SupportItemNumber,
+        //         item.GetSupportPurpose(item.newSupportItem.SupportItemNumber),
+        //         item.GetSupportPurpose(item.oldSupportItem.SupportItemNumber));
+        //     }
+        //     index++;
+        // }
+        // tables.Add(supportPurposeChangeTable);
+        
+        var registrationGroupNumberChangeTable = new Table();
+        registrationGroupNumberChangeTable.AddColumn("Row");
+        registrationGroupNumberChangeTable.AddColumn("Support Item Number (External Id)");
+        registrationGroupNumberChangeTable.AddColumn("New Registration Group Number");
+        registrationGroupNumberChangeTable.AddColumn("Old Registration Group Number");
+        index = 1;
+        foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.RegistrationGroupNumberChange)
+            {
+                registrationGroupNumberChangeTable.AddRow(index.ToString(),
+                item.SupportItemNumber,
+                item.newSupportItem.RegistrationGroupNumber,
+                item.oldSupportItem.RegistrationGroupNumber);
+            }
+            index++;
+        }
+        
+        
+        List<string> tableNames = new List<string>
+        {
+            "Items Added",
+            "Items Removed",
+            "Duplicate Items Added",
+            "Price Increases",
+            "Price Decreases",
+            "Price Limit Changes",
+            "Item Name Changes",
+            "Unit Changes",
+            "Proda Support Category Name Changes",
+            "Pace Support Category Name Changes",
+            "Proda Support Category Number Changes",
+            "Pace Support Category Number Changes",
+            "Registration Group Name Changes",
+            "Registration Group Number Changes",
+        };
+
+        for (int i = 0; i < tables.Count; i++)
+        {
+            AnsiConsole.WriteLine(tableNames[i]);
+            AnsiConsole.Write(tables[i]);
+            AnsiConsole.WriteLine("Table Finished Rendering");
             AnsiConsole.WriteLine(" ");
-            AnsiConsole.WriteLine("Table finished rendering");
-            
         }
         AnsiConsole.WriteLine("Detailed Tables Printed");
     }

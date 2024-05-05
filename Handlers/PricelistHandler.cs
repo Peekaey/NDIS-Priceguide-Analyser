@@ -78,6 +78,5 @@ public class PricelistHandler : IPricelistHandler
     {
         return _pricelistService.CreatePacePricelist(ndisSupportCatalogue, pricelist, selectedRegion);
     }
-    
 }
     

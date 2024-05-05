@@ -78,9 +78,6 @@ public class MenuHandler : IMenuHandler
             case MainMenuOptions.GeneratePacePricelist:
                 DisplayExportRegionMenu(selectedEnum, ndisSupportCatalogue, catalogFile);
                 break;
-            case MainMenuOptions.GenerateCustomPricelist:
-                AnsiConsole.WriteLine("Generate Custom Pricelist");
-                break;
             case MainMenuOptions.PreviewPricelist:
                 DisplayRegionPreviewMenu(ndisSupportCatalogue, catalogFile);
                 break;
@@ -186,7 +183,7 @@ public class MenuHandler : IMenuHandler
             var priceListTypes = GetMenuChoices<PricelistTypeMenuOptions>();
             var pricelistChoice = AnsiConsole.Prompt(new SelectionPrompt<int>().Title(
                     "\nPlease select the type of pricelist" +
-                    " you wish to preview" + "\n Proda(1) Pace(2) Custom(3) Exit(4)")
+                    " you wish to preview" + "\n Proda(1) Pace(2) Exit(4)")
                 .PageSize(priceListTypes.Count)
                 .AddChoices(priceListTypes.Keys));
 
@@ -287,7 +284,6 @@ public class MenuHandler : IMenuHandler
             ndisSupportCatalogue, catalogFile, oldcatalogFile);
         
         
-        
         AnsiConsole.WriteLine("\n Do you wish to preview or export these reports to an excel file?");
         var menuChoices = GetMenuChoices<PricelistAnalysisMenuOptions>();
         foreach (var menuChoice in menuChoices)
@@ -306,10 +302,13 @@ public class MenuHandler : IMenuHandler
             case PricelistAnalysisMenuOptions.PreviewChanges:
                 _pricelistAnalysisHandler.RenderDetailedPricelistAnalysis(oldNdisSupportCatalogue,
                     ndisSupportCatalogue, catalogFile, oldcatalogFile);
+                DisplayMainMenu(ndisSupportCatalogue, catalogFile);
                 break;
             case PricelistAnalysisMenuOptions.ExportToCSV:
-                _pricelistAnalysisHandler.RenderDetailedPricelistAnalysis(oldNdisSupportCatalogue,
+                AnsiConsole.WriteLine("Exporting Analysis to Excel....");
+                _pricelistAnalysisHandler.ExportChangesToCSV(oldNdisSupportCatalogue,
                     ndisSupportCatalogue, catalogFile, oldcatalogFile);
+                DisplayMainMenu(ndisSupportCatalogue, catalogFile);
                 break;
             case PricelistAnalysisMenuOptions.ReturnMainMenu:
                 DisplayMainMenu(ndisSupportCatalogue, catalogFile);

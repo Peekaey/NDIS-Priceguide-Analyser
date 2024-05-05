@@ -45,7 +45,7 @@ public class PreviewHandler : IPreviewHandler
     
     public void RenderDetailedPricelistAnalysis(PricelistAnalysisCatalog pricelistAnalysisCatalog)
     {
-        _previewService.RenderPricelistAnalysisSummary(pricelistAnalysisCatalog);
+        _previewService.RenderPricelistAnalysisDetailed(pricelistAnalysisCatalog);
     }
     
 }
