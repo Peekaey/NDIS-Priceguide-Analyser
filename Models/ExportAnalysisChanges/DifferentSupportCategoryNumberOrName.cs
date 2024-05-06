@@ -7,6 +7,4 @@ public class DifferentSupportCategoryNumberOrName
     public string ProdaSupportCategoryNumber { get; set; }
     public string PaceSupportCategoryName { get; set; }
     public string ProdaSupportCategoryName { get; set; }
-    
-    
 }

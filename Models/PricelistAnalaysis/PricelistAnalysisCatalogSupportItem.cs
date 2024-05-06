@@ -42,40 +42,4 @@ public class PricelistAnalysisCatalogSupportItem
         Increased,
         Decreased
     }
-
-    public string GetSupportPurpose(string supportItem)
-    {
-        var identifier = supportItem.Substring(supportItem.Length - 1);
-        // Uses the generic identifier to identify the support Purpose if the support item does not end with _T
-        if (!supportItem.Contains("T"))
-            switch (identifier)
-            {
-                case "1":
-                    return "Core";
-                case "2":
-                    return "Capital";
-                case "3":
-                    return "Capacity Building";
-                default:
-                    return "Unmapped Support Purpose";
-            }
-        else
-        {
-            // Mapping for support items that end with _T or _D > Changes to third last character
-            identifier = supportItem.Substring(supportItem.Length - 3);
-            switch (identifier)
-            {
-                case "1_T":
-                    return "Core";
-                case "1_D":
-                    return "Core";
-                // Represents Identifier 1_T_D
-                case "T_D":
-                    return "Core";
-                    break;               default:
-                    return "Unmapped Support Purpose";
-
-            }
-        }
-    }
 }

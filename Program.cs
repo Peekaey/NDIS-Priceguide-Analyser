@@ -17,8 +17,6 @@ namespace PricelistGenerator
         private INDISSupportCatalogueHandler _ndisSupportCatalogueHandler;
         private IExcelHelper _excelHelper;
         
-        //TODO Refactor Code (Remove References to Support Purpose)
-        //TODO Check Mapping for Registration Changes
         public Program(IMenuHandler menuHandler, INDISSupportCatalogueHandler ndisSupportCatalogueHandler, IExcelHelper excelHelper)
         {
             _menuHandler = menuHandler;
@@ -27,7 +25,6 @@ namespace PricelistGenerator
         }
         public void Main(string[] args)
         {
-            
             AnsiConsole.Write(
                 new FigletText("NDIS Pricelist Analyser")
                     .LeftJustified()
@@ -64,9 +61,7 @@ namespace PricelistGenerator
                 {
                     Console.WriteLine("Unhandled Exception");
                 }
-
             }
-
             AnsiConsole.MarkupLine(
                 "[dim slowblink]Now importing NDIS Support Catalogue...[/]");
 
@@ -75,7 +70,6 @@ namespace PricelistGenerator
                 "NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]"); 
             
             _menuHandler.DisplayMainMenu(ndisSupportCatalogue, catalogFile);
-            
         }
     }
 
@@ -83,8 +77,8 @@ namespace PricelistGenerator
     {
         static void Main(string[] args)
         {
-            // Initialising a whole host of dependencies to call a non static method from a static method
-            
+            // Initialising a whole host of dependencies to call a non-static method from a static method
+            // Possibly move this to Ninject
             IPricelistService pricelistService = new PricelistService();
             ICsvHelper csvHelper = new Helpers.CsvHelper();
             IPricelistHelper pricelistHelper = new PricelistHelper();
@@ -101,7 +95,6 @@ namespace PricelistGenerator
             IMenuHandler _menuHandler = new MenuHandler(pricelistHandler, previewHandler, pricelistAnalysisHandler, ndisSupportCatalogueHandler);
             INDISSupportCatalogueHandler _ndisSupportCatalogueHandler = new NdisSupportCatalogueHandler(ndisSupportCatalogueService);
             IExcelHelper _excelHelper = new ExcelHelper();
-
             
             var program = new Program(_menuHandler, _ndisSupportCatalogueHandler, _excelHelper);
             program.Main(args);

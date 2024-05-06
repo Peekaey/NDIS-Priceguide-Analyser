@@ -19,14 +19,11 @@ public class PricelistAnalysisHandler: IPricelistAnalysisHandler
         _pricelistAnalysisService = pricelistAnalysisService;
         _excelHelper = excelHelper;
     }
-
-
+    
     public void CompletePricelistAnalysis(NdisSupportCatalogue oldNdisSupportCatalogue,
         NdisSupportCatalogue newNdisSupportCatalogue, SpreadsheetFile spreadsheetFile, SpreadsheetFile oldSpreadsheetFile)
     {
-
         var analysisCatalogue = MapAnalysisSupportCatalogue(oldNdisSupportCatalogue, newNdisSupportCatalogue);
-
         _previewHandler.RenderCompletePricelistAnalysis(analysisCatalogue);
         
     }
@@ -41,7 +38,6 @@ public class PricelistAnalysisHandler: IPricelistAnalysisHandler
     public PricelistAnalysisCatalog MapAnalysisSupportCatalogue(NdisSupportCatalogue oldNdisSupportCatalogue, 
         NdisSupportCatalogue newNdisSupportCatalogue)
     {
-
         PricelistAnalysisCatalog pricelistAnalysisCatalogue = new PricelistAnalysisCatalog();
         var analysisCatalogue = _pricelistAnalysisService.PopulateNDISSupportCatalogue(oldNdisSupportCatalogue
             , newNdisSupportCatalogue, pricelistAnalysisCatalogue);

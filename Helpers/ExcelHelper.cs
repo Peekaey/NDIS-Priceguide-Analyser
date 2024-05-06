@@ -86,7 +86,6 @@ public class ExcelHelper: IExcelHelper
         spreadsheetFile.Path = spreadsheetFile.Path.Trim('"');
         var filePath = Path.Combine(spreadsheetFile.Path, fileName); 
         
-
         try {
             using (XLWorkbook workbook = new XLWorkbook())
             {
@@ -95,7 +94,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet1.Cell(1, 2).Value = "Support Item Name";
                 if (exportAnalysisChanges.ItemsAdded.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.ItemsAdded.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.ItemsAdded.Count; i++)
                     {
                         worksheet1.Cell(i + 2, 1).Value = exportAnalysisChanges.ItemsAdded[i].SupportItemNumber;
                         worksheet1.Cell(i + 2, 2).Value = exportAnalysisChanges.ItemsAdded[i].NewSupportItemName;
@@ -107,7 +106,7 @@ public class ExcelHelper: IExcelHelper
                     IXLWorksheet worksheet2 = workbook.Worksheets.Add("Items Removed");
                     worksheet2.Cell(1, 1).Value = "Support Item Number";
                     worksheet2.Cell(1, 2).Value = "Support Item Name";
-                    for (int i = 0; i < exportAnalysisChanges.ItemsRemoved.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.ItemsRemoved.Count; i++)
                     {
                         worksheet2.Cell(i + 2, 1).Value = exportAnalysisChanges.ItemsRemoved[i].SupportItemNumber;
                         worksheet2.Cell(i + 2, 2).Value = exportAnalysisChanges.ItemsRemoved[i].NewSupportItemName;
@@ -119,7 +118,7 @@ public class ExcelHelper: IExcelHelper
                     IXLWorksheet worksheet3 = workbook.Worksheets.Add("Duplicate Items");
                     worksheet3.Cell(1, 1).Value = "Support Item Number";
                     worksheet3.Cell(1, 2).Value = "Support Item Name";
-                    for (int i = 0; i < exportAnalysisChanges.DuplicateItems.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.DuplicateItems.Count; i++)
                     {
                         worksheet3.Cell(i + 2, 1).Value = exportAnalysisChanges.DuplicateItems[i].SupportItemNumber;
                         worksheet3.Cell(i + 2, 2).Value = exportAnalysisChanges.DuplicateItems[i].NewSupportItemName;
@@ -134,7 +133,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet4.Cell(1, 5).Value = "Very Remote Price Increase Percentage";
                 if (exportAnalysisChanges.PriceIncreases.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.PriceIncreases.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.PriceIncreases.Count; i++)
                     {
                         worksheet4.Cell(i + 2, 1).Value = exportAnalysisChanges.PriceIncreases[i].SupportItemNumber;
                         worksheet4.Cell(i + 2, 2).Value =
@@ -156,7 +155,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet5.Cell(1, 5).Value = "Very Remote Price Decrease Percentage";
                 if (exportAnalysisChanges.PriceDecreases.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.PriceDecreases.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.PriceDecreases.Count; i++)
                     {
                         worksheet5.Cell(i + 2, 1).Value = exportAnalysisChanges.PriceDecreases[i].SupportItemNumber;
                         worksheet5.Cell(i + 2, 2).Value =
@@ -176,7 +175,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet6.Cell(1, 3).Value = "Old Support Item Name";
                 if (exportAnalysisChanges.NameChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.NameChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.NameChanges.Count; i++)
                     {
                         worksheet6.Cell(i + 2, 1).Value = exportAnalysisChanges.NameChanges[i].SupportItemNumber;
                         worksheet6.Cell(i + 2, 2).Value = exportAnalysisChanges.NameChanges[i].NewSupportItemName;
@@ -190,7 +189,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet7.Cell(1, 3).Value = "Old Price Limit";
                 if (exportAnalysisChanges.PriceLimitChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.PriceLimitChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.PriceLimitChanges.Count; i++)
                     {
                         worksheet7.Cell(i + 2, 1).Value = exportAnalysisChanges.PriceLimitChanges[i].SupportItemNumber;
                         worksheet7.Cell(i + 2, 2).Value = exportAnalysisChanges.PriceLimitChanges[i].NewPriceLimit;
@@ -204,7 +203,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet8.Cell(1, 3).Value = "Old Unit";
                 if (exportAnalysisChanges.UnitChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.UnitChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.UnitChanges.Count; i++)
                     {
                         worksheet8.Cell(i + 2, 1).Value = exportAnalysisChanges.UnitChanges[i].SupportItemNumber;
                         worksheet8.Cell(i + 2, 2).Value = exportAnalysisChanges.UnitChanges[i].NewUnitOfMeasure;
@@ -218,7 +217,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet9.Cell(1, 3).Value = "Old Pace Support Category Number";
                 if (exportAnalysisChanges.PaceSupportCategoryNumberChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.PaceSupportCategoryNumberChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.PaceSupportCategoryNumberChanges.Count; i++)
                     {
                         worksheet9.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.PaceSupportCategoryNumberChanges[i].SupportItemNumber;
@@ -235,7 +234,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet10.Cell(1, 3).Value = "Old Proda Support Category Number";
                 if (exportAnalysisChanges.ProdaSupportCategoryNumberChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.ProdaSupportCategoryNumberChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.ProdaSupportCategoryNumberChanges.Count; i++)
                     {
                         worksheet10.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.ProdaSupportCategoryNumberChanges[i].SupportItemNumber;
@@ -252,7 +251,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet11.Cell(1, 3).Value = "Old Pace Support Category Name";
                 if (exportAnalysisChanges.PaceSupportCategoryNameChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.PaceSupportCategoryNameChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.PaceSupportCategoryNameChanges.Count; i++)
                     {
                         worksheet11.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.PaceSupportCategoryNameChanges[i].SupportItemNumber;
@@ -269,7 +268,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet12.Cell(1, 3).Value = "Old Proda Support Category Name";
                 if (exportAnalysisChanges.ProdaSupportCategoryNameChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.ProdaSupportCategoryNameChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.ProdaSupportCategoryNameChanges.Count; i++)
                     {
                         worksheet12.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.ProdaSupportCategoryNameChanges[i].SupportItemNumber;
@@ -288,7 +287,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet13.Cell(1, 5).Value = "Proda Support Category Number";
                 if (exportAnalysisChanges.DifferentSupportCategoryNumberOrNames.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.DifferentSupportCategoryNumberOrNames.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.DifferentSupportCategoryNumberOrNames.Count; i++)
                     {
                         worksheet13.Cell(i + 2, 1).Value = exportAnalysisChanges
                             .DifferentSupportCategoryNumberOrNames[i]
@@ -314,7 +313,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet14.Cell(1, 2).Value = "Old Registration Group Name";
                 if (exportAnalysisChanges.RegistrationGroupNameChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.RegistrationGroupNameChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.RegistrationGroupNameChanges.Count; i++)
                     {
                         worksheet14.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.RegistrationGroupNameChanges[i].SupportItemNumber;
@@ -331,7 +330,7 @@ public class ExcelHelper: IExcelHelper
                 worksheet15.Cell(1, 2).Value = "Old Registration Group Number";
                 if (exportAnalysisChanges.RegistrationGroupNumberChanges.Count > 0)
                 {
-                    for (int i = 0; i < exportAnalysisChanges.RegistrationGroupNumberChanges.Count; i++)
+                    for (var i = 0; i < exportAnalysisChanges.RegistrationGroupNumberChanges.Count; i++)
                     {
                         worksheet15.Cell(i + 2, 1).Value =
                             exportAnalysisChanges.RegistrationGroupNumberChanges[i].SupportItemNumber;
@@ -341,7 +340,6 @@ public class ExcelHelper: IExcelHelper
                             .OldRegistrationGroupNumber;
                     }
                 }
-
                 workbook.SaveAs(filePath);
                 AnsiConsole.WriteLine("File has been exported to: " + filePath);
             } 
@@ -350,5 +348,4 @@ public class ExcelHelper: IExcelHelper
             AnsiConsole.WriteLine("Error exporting analysis to Excel: " + e.Message);
         }
     }
-
 }

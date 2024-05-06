@@ -13,14 +13,12 @@ public class PricelistService: IPricelistService
     {
         foreach (var supportItem in ndisSupportCatalogue.NdisSupportCatalogueSupportItems)
         {
-
             PricelistSupportItem pricelistSupportItem = new PricelistSupportItem();
 
             pricelistSupportItem.ExternalId = supportItem.SupportItemNumber;
             pricelistSupportItem.SupportItem = supportItem.SupportItemName;
             pricelistSupportItem.RegistrationGroup = supportItem.RegistrationGroupName;
-
-
+            
             var selectedRegionPrice = "";
             switch (selectedRegion)
             {
@@ -41,29 +39,23 @@ public class PricelistService: IPricelistService
                     selectedRegionPrice = supportItem.VeryRemotePrice;
                     break;
             }
-
-            // Getting the correct Unit Of Measure
+            
             var unit = MapUnitOfMeasure(supportItem.Unit);
             pricelistSupportItem.UnitOfMeasure = unit;
-
-            // Getting the correct Support Category
+            
             pricelistSupportItem.SupportCategories = supportItem.ProdaSupportCategoryName;
-
-            // Getting the correct Support Purpose
+            
             var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);
             pricelistSupportItem.SupportPurpose = supportPurpose;
-
-            // Getting the correct Price Control
+            
             var priceControl = MapPriceControl(selectedRegionPrice);
             pricelistSupportItem.PriceControl = priceControl;
-
-            // Getting the correct Outcome Domain
+            
             var outcomeDomain = MapOutcomeDomain(supportItem.SupportItemNumber);
             pricelistSupportItem.OutcomeDomain = outcomeDomain;
             
             pricelist.PricelistSupportItems.Add(pricelistSupportItem);
         }
-
         return pricelist;
     }
     
@@ -80,8 +72,7 @@ public class PricelistService: IPricelistService
                 pricelistSupportItem.ExternalId = supportItem.SupportItemNumber + "_PACE";
                 pricelistSupportItem.SupportItem = supportItem.SupportItemName;
                 pricelistSupportItem.RegistrationGroup = supportItem.RegistrationGroupName;
-
-
+                
                 var selectedRegionPrice = "";
                 switch (selectedRegion)
                 {
@@ -102,23 +93,18 @@ public class PricelistService: IPricelistService
                         selectedRegionPrice = supportItem.VeryRemotePrice;
                         break;
                 }
-
-                // Getting the correct Unit Of Measure
+                
                 var unit = MapUnitOfMeasure(supportItem.Unit);
                 pricelistSupportItem.UnitOfMeasure = unit;
-
-                // Getting the correct Support Category
+                
                 pricelistSupportItem.SupportCategories = supportItem.PaceSupportCategoryName;
-
-                // Getting the correct Support Purpose
+                
                 var supportPurpose = MapSupportPurpose(supportItem.SupportItemNumber);
                 pricelistSupportItem.SupportPurpose = supportPurpose;
-
-                // Getting the correct Price Control
+                
                 var priceControl = MapPriceControl(selectedRegionPrice);
                 pricelistSupportItem.PriceControl = priceControl;
-
-                // Getting the correct Outcome Domain
+                
                 var outcomeDomain = MapOutcomeDomain(supportItem.SupportItemNumber);
                 pricelistSupportItem.OutcomeDomain = outcomeDomain;
                 
@@ -131,7 +117,7 @@ public class PricelistService: IPricelistService
 
     private String MapOutcomeDomain(string supportItem)
     {
-        string outcomeDomain = "";
+        var outcomeDomain = "";
         
         var thirdLastCharacter = supportItem[supportItem.Length - 3];
 
@@ -174,10 +160,9 @@ public class PricelistService: IPricelistService
         return outcomeDomain;
     }
     
-    
     private String MapPriceControl(string price)
     {
-        string priceControl = "";
+        var priceControl = "";
         
         switch (price)
         {
@@ -191,7 +176,6 @@ public class PricelistService: IPricelistService
                 priceControl = "Maximum";
                 break;
         }
-
         return priceControl;
     }
     
@@ -217,11 +201,10 @@ public class PricelistService: IPricelistService
                     supportPurpose = "Unmapped Support Purpose";
                     break;
             }
-
             return supportPurpose;
         }
         else
-        {
+        { 
             // Mapping for support items that end with _T or _D > Changes to third last character
            supportPurposeIdentifier = supportItem.Substring(supportItem.Length - 3);
            switch (supportPurposeIdentifier)

@@ -6,8 +6,6 @@ namespace PricelistGenerator.Helpers;
 
 public class PricelistHelper: IPricelistHelper
 {
-
-
     public RegionMenuOptions GetSelectedRegion(int region)
     {
         RegionMenuOptions regionDescription = (RegionMenuOptions)region;

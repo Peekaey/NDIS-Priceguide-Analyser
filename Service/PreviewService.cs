@@ -403,7 +403,6 @@ public class PreviewService: IPreviewService
         }
         tables.Add(registrationGroupNameChangeTable);
         
-        
         List<string> tableNames = new List<string>
         {
             "Items Added",

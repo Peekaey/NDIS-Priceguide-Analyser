@@ -6,12 +6,8 @@ public class PricelistAnalysisCatalog
     public List<NdisSupportCatalogueSupportItem> SupportItemsRemoved { get; set; }
     public List<NdisSupportCatalogueSupportItem> SupportItemsAdded { get; set; }
     public List<NdisSupportCatalogueSupportItem> DuplicateItemsAdded { get; set; }
-    
     public List<PricelistAnalysisSupportItemsWithPriceChanges> SupportItemsWithPriceIncrease { get; set; }
-    
     public List<PricelistAnalysisSupportItemsWithPriceChanges> SupportItemsWithPriceDecrease { get; set; }
-    
-
     public List<PricelistAnalysisPriceControlChanges> SupportItemsWithPriceControlChanges { get; set; }
     
     public decimal CalculatePriceIncreasePercentage(decimal oldPrice, decimal newPrice)
@@ -120,11 +116,4 @@ public class PricelistAnalysisCatalog
     {
         return SupportItemsWithPriceControlChanges.Count();
     }
-    
-    public int GetSupportPurposeChangeCount()
-    {
-        return pricelistAnalysisCatalogSupportItems.Count(supportItem =>
-            supportItem.SupportPurposeChanged);
-    }
-
 }

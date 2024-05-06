@@ -50,8 +50,7 @@ public class MenuHandler : IMenuHandler
 
         return menuChoices;
     }
-
-
+    
     public void DisplayMainMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
     {
         AnsiConsole.WriteLine("\nProgram Options:");
@@ -126,7 +125,7 @@ public class MenuHandler : IMenuHandler
             }
         }
 
-        if (returnToMenu == true)
+        if (returnToMenu)
         {
             DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
         }
@@ -136,7 +135,6 @@ public class MenuHandler : IMenuHandler
                                   $"\nFor the following regions {selectedRegionsText}");
             if (AnsiConsole.Confirm("Do you want to proceed?"))
             {
-
                 switch (choosenOption)
                 {
                     case MainMenuOptions.GenerateProdaPricelist:
@@ -151,7 +149,6 @@ public class MenuHandler : IMenuHandler
                         DisplayMainMenu(ndisSupportCatalogue, spreadsheetFile);
                         break;
                 }
-
             }
             else
             {
@@ -162,7 +159,6 @@ public class MenuHandler : IMenuHandler
 
     private void DisplayRegionPreviewMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
-
         var menuChoices = GetMenuChoices<RegionMenuOptions>();
         AnsiConsole.WriteLine("\nRegion Options:");
         foreach (var option in menuChoices)
@@ -191,8 +187,6 @@ public class MenuHandler : IMenuHandler
             if (selectedPricelistEnum != PricelistTypeMenuOptions.Exit)
             {
                 var selectedRegionDescription = GetEnumDescription(selectedEnum);
-                
-                
                 var selectedPricelistTypeDescription = GetEnumDescription(selectedPricelistEnum);
                 
                 AnsiConsole.WriteLine(
@@ -233,8 +227,7 @@ public class MenuHandler : IMenuHandler
 
     private void DisplayPricelistAnalysisMenu(NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile catalogFile)
     {
-        NdisSupportCatalogue
-            oldNdisSupportCatalogue = new NdisSupportCatalogue();
+        NdisSupportCatalogue oldNdisSupportCatalogue = new NdisSupportCatalogue();
         SpreadsheetFile oldcatalogFile = new SpreadsheetFile();
 
         string providedFilePath = "";
@@ -251,7 +244,6 @@ public class MenuHandler : IMenuHandler
                 ExcelHelper excelHelper = new ExcelHelper();
                 if (excelHelper.ValidateProvidedFile(providedFilePath))
                 {
-
                     oldcatalogFile = excelHelper.CreateFileFromProvidedFilePath(providedFilePath);
                     AnsiConsole.MarkupLine("File existence validation [bold green1]PASSED[/]");
                     break;
@@ -266,23 +258,19 @@ public class MenuHandler : IMenuHandler
             {
                 Console.WriteLine("Unhandled Exception");
             }
-
         }
 
         AnsiConsole.MarkupLine(
             "[dim slowblink]Now importing the Old NDIS Support Catalogue...[/]");
-
-
+        
         oldNdisSupportCatalogue = _ndisSupportCatalogueHandler.ImportNdiSupportCatalogue(oldcatalogFile);
         AnsiConsole.MarkupLine(
             "Old NDIS Support Catalogue Successfully Imported [bold green1] SUCCESS[/]");
 
         AnsiConsole.WriteLine("\nAnalysing Pricelist......");
-
-        // Process to for pricelist
+        
         _pricelistAnalysisHandler.CompletePricelistAnalysis(oldNdisSupportCatalogue,
             ndisSupportCatalogue, catalogFile, oldcatalogFile);
-        
         
         AnsiConsole.WriteLine("\n Do you wish to preview or export these reports to an excel file?");
         var menuChoices = GetMenuChoices<PricelistAnalysisMenuOptions>();
@@ -305,7 +293,7 @@ public class MenuHandler : IMenuHandler
                     ndisSupportCatalogue, catalogFile, oldcatalogFile);
                 DisplayMainMenu(ndisSupportCatalogue, catalogFile);
                 break;
-            case PricelistAnalysisMenuOptions.ExportToCSV:
+            case PricelistAnalysisMenuOptions.ExportToExcel:
                 AnsiConsole.WriteLine("Exporting Analysis to Excel....");
                 _pricelistAnalysisHandler.ExportChangesToCSV(oldNdisSupportCatalogue,
                     ndisSupportCatalogue, catalogFile, oldcatalogFile);
@@ -318,7 +306,5 @@ public class MenuHandler : IMenuHandler
                 DisplayMainMenu(ndisSupportCatalogue, catalogFile);
                 break;
         }
-
-        
     }
 }
