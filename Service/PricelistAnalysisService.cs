@@ -14,13 +14,10 @@ public class PricelistAnalysisService : IPricelistAnalysisService
     {
         pricelistAnalysisCatalogue = MapNDISSupportCatalogueItems(oldNdisSupportCatalog, newNdisSupportCatalogue
             , pricelistAnalysisCatalogue);
-
-
-        // Mapping for all the changes
+        
         pricelistAnalysisCatalogue = GetSupportItemsAdded(pricelistAnalysisCatalogue, newNdisSupportCatalogue);
         pricelistAnalysisCatalogue = GetSupportItemsRemoved(pricelistAnalysisCatalogue, newNdisSupportCatalogue);
         pricelistAnalysisCatalogue = GetDuplicateItemsAdded(pricelistAnalysisCatalogue, newNdisSupportCatalogue);
-
         pricelistAnalysisCatalogue = GetSupportItemNameChange(pricelistAnalysisCatalogue, newNdisSupportCatalogue);
         pricelistAnalysisCatalogue =
             GetSupportItemProdaSupportCategoryNameChange(pricelistAnalysisCatalogue, newNdisSupportCatalogue);
@@ -36,7 +33,6 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         pricelistAnalysisCatalogue = GetRegistrationGroupNameChange(pricelistAnalysisCatalogue);
         pricelistAnalysisCatalogue = GetRegistrationGroupNumberChange(pricelistAnalysisCatalogue);
         pricelistAnalysisCatalogue = GetSupportPurposeChange(pricelistAnalysisCatalogue);
-
         pricelistAnalysisCatalogue = CalculatePriceIncreasePercentage(pricelistAnalysisCatalogue);
         pricelistAnalysisCatalogue = CalculatePriceDecreasePercentage(pricelistAnalysisCatalogue);
         
@@ -49,7 +45,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         pricelistAnalysisCatalogue.pricelistAnalysisCatalogSupportItems =
             new List<PricelistAnalysisCatalogSupportItem>();
         // Mapping old supportCatalogue first
-        // Keeping Logic Mapping Logic Separate
+
         foreach (var supportItem in oldNdisSupportCatalog.NdisSupportCatalogueSupportItems)
         {
             var pricelistAnalysisSupportItem = new PricelistAnalysisCatalogSupportItem();
@@ -203,7 +199,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
 
             var priceChange = false;
             var priceIncrease = false;
-            var priceDecrease = false;
+
             // Prices across regions only increase or decrease as a group, never individually
             pricelistAnalysisSupportItemsWithPriceChanges.SupportItemNumber = supportItem.SupportItemNumber;
             if (!string.IsNullOrEmpty(supportItem.oldSupportItem.ActPrice)&& !string.IsNullOrEmpty(supportItem.newSupportItem.ActPrice))
@@ -454,7 +450,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
                 }
             }
             
-            if (priceChange == true)
+            if (priceChange)
             {
                 if (priceIncrease)
                 {
@@ -481,6 +477,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
     {
         pricelistAnalysisCatalog.SupportItemsWithPriceControlChanges =
             new List<PricelistAnalysisPriceControlChanges>();
+        
         foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
             var priceChange = false;
@@ -557,7 +554,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
                 priceChange = true;
             }
 
-            if (priceChange == true)
+            if (priceChange)
             {
                 PricelistAnalysisPriceControlChanges pricelistAnalysisPriceControlChanges =
                     new PricelistAnalysisPriceControlChanges();
@@ -587,8 +584,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         }
         return pricelistAnalysisCatalog;
     }
-
-
+    
     private PricelistAnalysisCatalog GetRegistrationGroupNameChange(PricelistAnalysisCatalog pricelistAnalysisCatalog)
     {
         foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
@@ -611,12 +607,12 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         foreach (var supportItem in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
             var oldSupportPurpose = GetSupportPurpose(supportItem.oldSupportItem.SupportItemNumber);
-
             var newSupportPurpose = GetSupportPurpose(supportItem.newSupportItem.SupportItemNumber);
-
-            if (oldSupportPurpose != newSupportPurpose) supportItem.SupportPurposeChanged = true;
+            if (oldSupportPurpose != newSupportPurpose)
+            {
+                supportItem.SupportPurposeChanged = true;
+            }
         }
-
         return pricelistAnalysisCatalog;
     }
 
@@ -801,6 +797,7 @@ public class PricelistAnalysisService : IPricelistAnalysisService
             priceLimitChange.SupportItemNumber = item.SupportItemNumber;
             priceLimitChange.NewPriceLimit = item.ActNewPriceControl;
             priceLimitChange.OldPriceLimit = item.ActOldPriceControl;
+            exportAnalysisChanges.PriceLimitChanges.Add(priceLimitChange);
         }
 
         exportAnalysisChanges.UnitChanges = new List<UnitOfMeasureChange>();
@@ -897,10 +894,8 @@ public class PricelistAnalysisService : IPricelistAnalysisService
         exportAnalysisChanges.DifferentSupportCategoryNumberOrNames = new List<DifferentSupportCategoryNumberOrName>();
         foreach (var item in analysisCatalog.pricelistAnalysisCatalogSupportItems)
         {
-            if (item.newSupportItem.ProdaSupportCategoryName != item.oldSupportItem.ProdaSupportCategoryName ||
-                item.newSupportItem.ProdaSupportCategoryNumber != item.oldSupportItem.ProdaSupportCategoryNumber ||
-                item.newSupportItem.PaceSupportCategoryName != item.oldSupportItem.PaceSupportCategoryName ||
-                item.newSupportItem.PaceSupportCategoryNumber != item.oldSupportItem.PaceSupportCategoryNumber)
+            if (item.newSupportItem.ProdaSupportCategoryName != item.newSupportItem.PaceSupportCategoryName ||
+                item.newSupportItem.ProdaSupportCategoryNumber != item.newSupportItem.PaceSupportCategoryNumber)
             {
                 DifferentSupportCategoryNumberOrName differentSupportCategoryNumberOrName =
                     new DifferentSupportCategoryNumberOrName();
@@ -912,7 +907,6 @@ public class PricelistAnalysisService : IPricelistAnalysisService
                 exportAnalysisChanges.DifferentSupportCategoryNumberOrNames.Add(differentSupportCategoryNumberOrName);
             }
         }
-        
         return exportAnalysisChanges;
     }
 }

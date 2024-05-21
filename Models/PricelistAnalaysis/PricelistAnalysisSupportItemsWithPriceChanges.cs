@@ -2,7 +2,6 @@ namespace PricelistGenerator.Models;
 
 public class PricelistAnalysisSupportItemsWithPriceChanges
 {
-    
     public string SupportItemNumber { get; set; }
     public string OldActPrice { get; set; }
     public string OldNswPrice { get; set; }
@@ -24,12 +23,8 @@ public class PricelistAnalysisSupportItemsWithPriceChanges
     public string NewWaPrice { get; set; }
     public string NewRemotePrice { get; set; }
     public string NewVeryRemotePrice { get; set; }
-    
     public string ActPercentage { get; set; }
-    
     public string NtPercentage { get; set; }
-    
     public string RemotePercentage { get; set; }
-    
     public string VeryRemotePercentage { get; set; }
 }

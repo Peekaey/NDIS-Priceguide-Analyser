@@ -23,5 +23,4 @@ public class PricelistAnalysisPriceControlChanges
     public string RemoteNewPriceControl { get; set; }
     public string VeryRemoteOldPriceControl { get; set; }
     public string VeryRemoteNewPriceControl { get; set; }
-    
 }

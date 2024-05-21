@@ -21,5 +21,4 @@ public class NdisSupportCatalogueHandler : INDISSupportCatalogueHandler
         ndisSupportCatalogue = _ndisSupportCatalogueService.ImportNdiSupportCatalogue(spreadsheetFile, ndisSupportCatalogue);
         return ndisSupportCatalogue;
     }
-    
 }

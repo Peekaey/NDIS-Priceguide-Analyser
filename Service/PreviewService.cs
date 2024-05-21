@@ -341,6 +341,30 @@ public class PreviewService: IPreviewService
         }
         tables.Add(paceSupportCategoryNumberChangeTable);
 
+        var differentSupportCategoryNumberOrNameTable = new Table();
+        differentSupportCategoryNumberOrNameTable.AddColumn("Row");
+        differentSupportCategoryNumberOrNameTable.AddColumn("Support Item Number (External Id)");
+        differentSupportCategoryNumberOrNameTable.AddColumn("Proda Support Category Number");
+        differentSupportCategoryNumberOrNameTable.AddColumn("Pace Support Category Number");
+        differentSupportCategoryNumberOrNameTable.AddColumn("Proda Support Category Name");
+        differentSupportCategoryNumberOrNameTable.AddColumn("Pace Support Category Name");
+        index = 1;
+        foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
+        {
+            if (item.newSupportItem.PaceSupportCategoryNumber != item.newSupportItem.ProdaSupportCategoryNumber ||
+                item.newSupportItem.PaceSupportCategoryName != item.newSupportItem.ProdaSupportCategoryName)
+            {
+                differentSupportCategoryNumberOrNameTable.AddRow(index.ToString(),
+                item.SupportItemNumber,
+                item.newSupportItem.ProdaSupportCategoryNumber,
+                item.newSupportItem.PaceSupportCategoryNumber,
+                item.newSupportItem.ProdaSupportCategoryName,
+                item.newSupportItem.PaceSupportCategoryName);
+            }
+            index++;
+        }
+        tables.Add(differentSupportCategoryNumberOrNameTable);
+        
         var registrationGroupNameChangeTable = new Table();
         registrationGroupNameChangeTable.AddColumn("Row");
         registrationGroupNameChangeTable.AddColumn("Support Item Number (External Id)");
@@ -359,25 +383,6 @@ public class PreviewService: IPreviewService
             index++;
         }
         tables.Add(registrationGroupNameChangeTable);
-        //
-        // var supportPurposeChangeTable = new Table();
-        // supportPurposeChangeTable.AddColumn("Row");
-        // supportPurposeChangeTable.AddColumn("Support Item Number (External Id)");
-        // supportPurposeChangeTable.AddColumn("New Support Purpose");
-        // supportPurposeChangeTable.AddColumn("Old Support Purpose");
-        // index = 1;
-        // foreach (var item in pricelistAnalysisCatalog.pricelistAnalysisCatalogSupportItems)
-        // {
-        //     if (item.SupportPurposeChanged)
-        //     {
-        //         supportPurposeChangeTable.AddRow(index.ToString(),
-        //         item.SupportItemNumber,
-        //         item.GetSupportPurpose(item.newSupportItem.SupportItemNumber),
-        //         item.GetSupportPurpose(item.oldSupportItem.SupportItemNumber));
-        //     }
-        //     index++;
-        // }
-        // tables.Add(supportPurposeChangeTable);
         
         var registrationGroupNumberChangeTable = new Table();
         registrationGroupNumberChangeTable.AddColumn("Row");
@@ -396,7 +401,7 @@ public class PreviewService: IPreviewService
             }
             index++;
         }
-        
+        tables.Add(registrationGroupNameChangeTable);
         
         List<string> tableNames = new List<string>
         {
@@ -412,6 +417,7 @@ public class PreviewService: IPreviewService
             "Pace Support Category Name Changes",
             "Proda Support Category Number Changes",
             "Pace Support Category Number Changes",
+            "Different Support Category Number or Name Between Pace and Proda",
             "Registration Group Name Changes",
             "Registration Group Number Changes",
         };

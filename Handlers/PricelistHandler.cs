@@ -26,7 +26,6 @@ public class PricelistHandler : IPricelistHandler
         _pricelistHelper = pricelistHelper;
     }
     
-    
     public void ExportProdaPricelist(List<int> menuChoice, NdisSupportCatalogue ndisSupportCatalogue, SpreadsheetFile spreadsheetFile)
     {
         
@@ -37,15 +36,10 @@ public class PricelistHandler : IPricelistHandler
             var selectedRegion = _pricelistHelper.GetSelectedRegion(region);
             pricelist = CreateProdaPricelist(ndisSupportCatalogue, pricelist, selectedRegion);
             var csvFilePath = _csvHelper.ExportProdaPricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
-            
-            if (csvFilePath.Equals("error"))
-            {
-                AnsiConsole.WriteLine($"Error exporting {selectedRegion} Pricelist");
-            }
-            else
-            {
-                AnsiConsole.WriteLine($"\nPricelist for {selectedRegion} has [bold green1] SUCCESSFULLY [/] been exported to {csvFilePath}");
-            }
+
+            AnsiConsole.WriteLine(csvFilePath.Equals("error")
+                ? $"Error exporting {selectedRegion} Pricelist"
+                : $"\nPricelist for {selectedRegion} has [bold green1] SUCCESSFULLY [/] been exported to {csvFilePath}");
         }
     }
 
@@ -57,15 +51,10 @@ public class PricelistHandler : IPricelistHandler
             var selectedRegion = _pricelistHelper.GetSelectedRegion(region);
             pricelist = CreatePacePricelist(ndisSupportCatalogue, pricelist, selectedRegion);
             var csvFilePath = _csvHelper.ExportPacePricelistToCsv(pricelist, spreadsheetFile, selectedRegion);
-            
-            if (csvFilePath.Equals("error"))
-            {
-                AnsiConsole.WriteLine($"Error exporting {selectedRegion} Pricelist");
-            }
-            else
-            {
-                AnsiConsole.WriteLine($"Pricelist for {selectedRegion} has been exported to {csvFilePath}");
-            }
+
+            AnsiConsole.WriteLine(csvFilePath.Equals("error")
+                ? $"Error exporting {selectedRegion} Pricelist"
+                : $"Pricelist for {selectedRegion} has been exported to {csvFilePath}");
         }
     }
 

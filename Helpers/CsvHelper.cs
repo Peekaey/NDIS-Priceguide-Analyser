@@ -33,7 +33,6 @@ public class CsvHelper: ICsvHelper
             using (StreamWriter writer = new StreamWriter(filePath))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
-                // Write initial header row
                 csv.WriteField("Registration Group");
                 csv.WriteField("Support Purpose");
                 csv.WriteField("External ID");
@@ -72,10 +71,10 @@ public class CsvHelper: ICsvHelper
     }
     
      public string ExportPacePricelistToCsv(Pricelist pricelist, SpreadsheetFile spreadsheetFile, RegionMenuOptions selectedRegion)
-     {
+     { 
          PricelistHelper pricelistHelper = new PricelistHelper();
-        try
-        {
+         try
+         {
             var regionName = pricelistHelper.GetRegionDescription(selectedRegion);
             var fileName = "PACE - " + regionName + " - " + DateTime.Now.ToString("dd-MM-yyyy") + ".csv";
             
@@ -91,7 +90,6 @@ public class CsvHelper: ICsvHelper
             using (StreamWriter writer = new StreamWriter(filePath))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
-                // Write initial header row
                 csv.WriteField("Registration Group");
                 csv.WriteField("Support Purpose");
                 csv.WriteField("External ID");
