@@ -133,6 +133,7 @@ public class PricelistService: IPricelistService
     {
         string outcomeDomain = "";
         
+        supportItem = supportItem.Replace("_", "");
         var thirdLastCharacter = supportItem[supportItem.Length - 3];
 
         if (thirdLastCharacter.ToString() == "T" || thirdLastCharacter.ToString() == "D")
@@ -141,35 +142,39 @@ public class PricelistService: IPricelistService
             thirdLastCharacter = supportItem[supportItem.Length - 5];
         }
         
-        switch (thirdLastCharacter.ToString())
+        int number;
+        if (int.TryParse(thirdLastCharacter.ToString(), out number))
         {
-            case "1":
-                outcomeDomain = "Daily Living";
-                break;
-            case "2":
-                outcomeDomain = "Home & Placement";
-                break;
-            case "3":
-                outcomeDomain = "Health & Wellbeing";
-                break;
-            case "4": 
-                outcomeDomain = "Lifelong Learning & Education";
-                break;
-            case "5":
-                outcomeDomain = "Work & Vocation";
-                break;
-            case "6":
-                outcomeDomain = "Social & Community Participation";
-                break;
-            case "7":
-                outcomeDomain = "Relationships, Family & Significant Others";
-                break;
-            case "8":
-                outcomeDomain = "Choice & Control";
-                break;
-            default:
-                outcomeDomain = "Outcome Domain Not Mapped";
-                break;
+            switch (number)
+            {
+                case 1:
+                    outcomeDomain = "Daily Living";
+                    break;
+                case 2:
+                    outcomeDomain = "Home & Placement";
+                    break;
+                case 3:
+                    outcomeDomain = "Health & Wellbeing";
+                    break;
+                case 4:
+                    outcomeDomain = "Lifelong Learning & Education";
+                    break;
+                case 5:
+                    outcomeDomain = "Work & Vocation";
+                    break;
+                case 6:
+                    outcomeDomain = "Social & Community Participation";
+                    break;
+                case 7:
+                    outcomeDomain = "Relationships, Family & Significant Others";
+                    break;
+                case 8:
+                    outcomeDomain = "Choice & Control";
+                    break;
+                default:
+                    outcomeDomain = "Outcome Domain Not Mapped";
+                    break;
+            }
         }
         return outcomeDomain;
     }
